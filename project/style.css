@@ -1,0 +1,66 @@
+
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    padding: 0.5rem;
+    background-color: #333;
+    color: #ccc;
+    font-family: 华文中宋, Simsun;
+}
+header {
+    margin-bottom: 0.5rem;
+}
+h1, h2, h3, h4, h5, h6, p {
+    color: #ccc;
+}
+ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap:3px;
+}
+a {
+    cursor: pointer;
+    text-decoration: none;
+    color: #ccc;
+}
+
+li a:hover {
+    color: ivory;
+}
+#style-controller {
+    display: block;
+}
+#style-controller.hide {
+    display: none;
+}
+#chapter-content{
+    padding: 0.5rem;
+}
+#chapter-content p {
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    text-indent: 1.5rem;
+    letter-spacing: 1px;
+}
+
+input, textarea, select, option,button {
+
+    background-color: transparent;
+    padding: 5px 0.5rem;
+    color: #ccc;
+    border: 1px solid #aaa;
+    border-radius: 0.25rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+
+#file-list {
+    margin: 1rem;
+
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link href="/style.css" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+<header>
+    <div class="chapter-nav">
+        <a  href=<%= "/chapter/" + prevId%>>上一章</a>
+        <a href="/">📚</a>
+        <a  href=<%= "/chapter/" + nextId%>>下一章</a>
+    </div>
+    <div class="chapter-style">
+        <button id="style-set-btn">settings</button>
+        <div id="style-controller" class="hide">
+            <div>
+                <label for="pet-select">Choose a font:</label>
+                <select name="pets" id="font-select">
+                    <option value="SimSun">宋体</option>
+                    <option value="FangSong">仿宋</option>
+                    <option value="STZhongsong">华文中宋</option>
+                    <option value="SimHei">黑体</option>
+                </select>
+            </div>
+            <div>
+                <label for="pet-select">Choose font size:</label>
+                <select name="pets" id="size-select">
+                    <option value="0.5">0.5</option>
+                    <option value="0.75">0.75</option>
+                    <option value="1">1</option>
+                    <option value="1.25">1.25</option>
+                    <option value="1.5">1.5</option>
+                    <option value="1.75">1.75</option>
+                    <option value="2">2</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</header>
+<div id="chapter-content" chapter_id="<%= id %>">
+    <%- content %>
+</div>
+<footer>
+    <a  href=<%= "/chapter/" + prevId%>>上一章</a>
+    <a href="/">📚</a>
+    <a  href=<%= "/chapter/" + nextId%>>下一章</a>
+</footer>
+<script src="../index.js"></script>
+<script>
+    const styleEl = document.getElementById('style-controller');
+    const styleSetBtn = document.getElementById('style-set-btn');
+    styleSetBtn.addEventListener('click',()=>{
+        styleEl.classList.toggle('hide');
+    })
+
+    const fontEl = document.getElementById('font-select');
+    const container = document.getElementById('chapter-content');
+    fontEl.addEventListener('change', e => {
+        container.style.fontFamily = e.target.value;
+    })
+    const sizeEl = document.getElementById('size-select');
+    sizeEl.addEventListener('change', e => {
+        container.style.fontSize = e.target.value + 'rem';
+    })
+
+</script>
+<style>
+    header {
+        position: sticky;
+        top: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 5px;
+        background-color: #333;
+    }
+</style>
+</body>
+</html>

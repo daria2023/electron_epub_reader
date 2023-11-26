@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+    <div class="upload">
+        <input type="file" multiple id="uploading" accept=".epub"/>
+    </div>
+    <ul id="file-list"></ul>
+</main>
+<script src="index.js"></script>
+<script>
+    const file_list  = document.getElementById('file-list');
+    fetch('/list').then(res => {
+        return (res.json());
+    }).then(data => {
+        if(data.length > 0) {
+            data.map(li => {
+                const l  = document.createElement('li');
+                l.innerHTML = `<a>>> ${li}</a>`;
+                file_list.appendChild(l);
+                l.addEventListener('click',async ()=>{
+                    const encodedFilename = encodeURIComponent(li);
+                    const res = await fetch('/books/'+ encodedFilename);
+                    const data = await res.text();
+                    if(data === 'done') {
+                        window.location.replace('http://localhost:9999/cover');
+                    }
+                })
+            })
+        } else {
+            const pEl = document.createElement('p');
+            pEl.innerHTML = 'No books yet, add some!'
+            file_list.appendChild(pEl);
+        }
+    })
+</script>
+</body>
+</html>

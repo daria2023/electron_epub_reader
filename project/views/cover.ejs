@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link href="/style.css" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+<header>
+    <a href="/">📚</a>
+    <h4>
+        <%= title %>, author:  <%= author %>
+    </h4>
+</header>
+<div id="menu">
+    <h4 style="letter-spacing: 2px">MENU</h4>
+    <ul style="margin-left: 2rem">
+        <% flows.forEach((flow,index)=> { %>
+            <li style="margin-top: 0.5rem;">
+                <a href=<%= "/chapter/" + flow.id%> idx=<%=index%>>
+                    <%= (flow.title || flow.id.slice(3))%>
+                </a>
+            </li>
+        <% }) %>
+    </ul>
+</div>
+
+<main class="flows">
+</main>
+</body>
+</html>
+
+
+
