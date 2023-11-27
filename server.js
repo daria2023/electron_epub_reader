@@ -19,10 +19,13 @@ const upload = multer({ dest: 'books/' ,fileFilter(req, file, callback) {
 
 const {handleEpub, fetchChapter} = require("./epub")
 
+const { StringDecoder } = require('node:string_decoder');
+
+
 
 app.set('view engine', 'ejs');
+app.use(express.static('project'));
 
-app.use(express.static('project'))
 
 app.get("/", (req,res) =>{
     res.sendFile('project/index.html')
@@ -32,8 +35,16 @@ app.get("/list", (req,res) => {
         res.send(JSON.stringify(files));
     });
 })
+app.get("/notes",(req,res) => {
+    fs.readdir(path.join(__dirname, 'notes'), (err, files) => {
+        res.send(JSON.stringify(files));
+    });
+})
 app.get("/cover", (req,res) =>{
     res.sendFile(path.join(__dirname,'project','views','cover.html'))
+})
+app.get("/show-note", (req,res) =>{
+    res.sendFile(path.join(__dirname,'project','views','note.html'))
 })
 app.get("/chapter/:id", async (req,res) =>{
     const chapter_id = req.params.id;
@@ -75,15 +86,46 @@ app.get('/books/:filename', async (req,res) => {
     const isDone = await handleCover(this_html.meta, this_html.flows);
     res.send(isDone);
 })
+app.get('/notes/:filename', async (req,res) => {
+    let filename = req.params.filename;
+    const filePath = path.join(__dirname, 'notes', filename);
+    const note = fs.readFileSync(filePath,'utf-8');
+    await handleNote(note);
+    res.sendFile(filePath)
+})
 
 app.get('/images/*', async (req,res) => {
     const requestedPath = req.params[0];
     const fullPath = path.join(__dirname, 'images', requestedPath);
     res.sendFile(fullPath);
 })
+
+app.post('/notes', upload.single('file'),async (req, res)=>{
+    const { title, content } = req.body;
+    const txtPath = path.join(__dirname,'notes', `${title}.txt`);
+    const passed = `\r\n ${content} \r\n --${new Date().toTimeString()} \r\n`;
+    await fs.appendFile(txtPath, passed,'utf-8',(e)=>{
+        console.log(e)
+    });
+
+})
+
+const handleNote = async (note) =>{
+    const note_path = path.join('project','views','note.ejs');
+    const note_html_path = path.join('project','views','note.html')
+    const template = fs.readFileSync(note_path, 'utf8');
+
+    const data = {
+        content: note,
+    };
+
+    const html = ejs.render(template, data);
+    await fs.writeFileSync(note_html_path, html, 'utf8');
+    return 'done';
+}
 const handleCover = async (meta, flows) => {
     const cover_path = path.join('project','views','cover.ejs');
-    const cover_html_path = path.join('project','views','cover.html')
+    const cover_html_path = path.join('project','views','cover.html');
     const template = fs.readFileSync(cover_path, 'utf8');
     const ids = flows?.map(flow => {
         return flow.id
@@ -98,8 +140,16 @@ const handleCover = async (meta, flows) => {
     };
     const html = ejs.render(template, data);
     await fs.writeFileSync(cover_html_path, html, 'utf8');
+    const chapter_note_path = path.join('notes',`${meta.title}.txt`);
+    await fs.exists(chapter_note_path,async (exists)=>{
+        if(!exists){
+            await fs.writeFileSync(chapter_note_path,'');
+
+        }
+    })
     return 'done';
 }
+
 
 const handleChapter = async (id) => {
     const chapter_path = path.join('project','views','chapter.ejs');
@@ -129,5 +179,5 @@ const run = () => {
         console.log("server is running now!")
     })
 }
-// run();
+
 module.exports = {run}

@@ -89,7 +89,8 @@
         const whole_txt = selected_txt_El.innerText;
         const segments = whole_txt.split(selected_txt);
         const newArray = [segments[0], selected_txt, segments[1]];
-        splitEl(selected_txt_El, newArray)
+        splitEl(selected_txt_El, newArray);
+        storeTxts(selected_txt);
     }
 
     const splitEl = (el, txts) => {
@@ -103,7 +104,22 @@
         end.innerHTML = txts[2] ?? ''
         el.append(start,the_selected,end);
     }
-    document.addEventListener('mouseup',handleSelect)
+
+    const storeTxts = async (txt)=>{
+        const titleValue = localStorage.getItem('title');
+        const formData = new FormData();
+        formData.append('title', titleValue);
+        formData.append('content', txt);
+
+        const res = await fetch(`/notes`, {
+            method: 'post',
+            body: formData,
+        })
+        console.log(res)
+    }
+    document.addEventListener('mouseup',handleSelect);
+
+
 
 </script>
 <style>

@@ -75,9 +75,6 @@ input, textarea, select, option,button {
     cursor: pointer;
 }
 
-#file-list {
-    margin: 1rem;
-}
 
 .light h1,
 .light h2,
@@ -88,4 +85,10 @@ input, textarea, select, option,button {
 .light p ,
 .light a{
     color: #333;
+}
+#file-list, #notes-list {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 1rem;
+    margin: 1rem;
 }
