@@ -5,3 +5,8 @@ There are still something else i'm fixing:
 - the fetched images should be cleared after the chapter has read;
 - more fonts and style can be provided;
 - more theme can be provided, i set it dark only because it fits my general pc theme.
+
+待完成：
+- 可能存在的端口占用问题；
+- 本章阅读完后清理加载的图片；
+- 更多字体、样式和主题提供；
