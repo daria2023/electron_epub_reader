@@ -11,6 +11,18 @@ body {
     color: #ccc;
     font-family: 华文中宋, Simsun;
 }
+
+body::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+body::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+body::-webkit-scrollbar-thumb {
+    background-color: #444;
+}
+
 header {
     margin-bottom: 0.5rem;
 }
@@ -49,7 +61,6 @@ li a:hover {
 }
 
 input, textarea, select, option,button {
-
     background-color: transparent;
     padding: 5px 0.5rem;
     color: #ccc;
@@ -59,8 +70,6 @@ input, textarea, select, option,button {
     cursor: pointer;
 }
 
-
 #file-list {
     margin: 1rem;
-
 }
