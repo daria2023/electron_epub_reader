@@ -13,11 +13,11 @@
         <a  href=<%= "/chapter/" + nextId%>>下一章</a>
     </div>
     <div class="chapter-style">
-        <button id="style-set-btn">settings</button>
+        <button id="style-set-btn">⚙️</button>
         <div id="style-controller" class="hide">
             <div>
-                <label for="pet-select">Choose a font:</label>
-                <select name="pets" id="font-select">
+                <label for="font-select">Choose a font:</label>
+                <select name="font-family" id="font-select">
                     <option value="SimSun">宋体</option>
                     <option value="FangSong">仿宋</option>
                     <option value="STZhongsong">华文中宋</option>
@@ -25,12 +25,22 @@
                 </select>
             </div>
             <div>
-                <label for="pet-select">Choose font size:</label>
-                <select name="pets" id="size-select">
+                <label for="size-select">Choose font size:</label>
+                <select name="font-size" id="size-select">
                     <option value="0.5">0.5</option>
                     <option value="0.75">0.75</option>
                     <option value="1">1</option>
                     <option value="1.25">1.25</option>
+                    <option value="1.5">1.5</option>
+                    <option value="1.75">1.75</option>
+                    <option value="2">2</option>
+                </select>
+            </div>
+            <div>
+                <label for="line-height-select">Choose a line-height:</label>
+                <select name="line-height" id="line-height-select">
+                    <option value="1.15">1.15</option>
+                    <option value="1.25">1.2</option>
                     <option value="1.5">1.5</option>
                     <option value="1.75">1.75</option>
                     <option value="2">2</option>
@@ -55,15 +65,45 @@
         styleEl.classList.toggle('hide');
     })
 
-    const fontEl = document.getElementById('font-select');
     const container = document.getElementById('chapter-content');
+    const fontEl = document.getElementById('font-select');
+    const sizeEl = document.getElementById('size-select');
+    const lineHeightEl = document.getElementById('line-height-select');
+
     fontEl.addEventListener('change', e => {
         container.style.fontFamily = e.target.value;
     })
-    const sizeEl = document.getElementById('size-select');
     sizeEl.addEventListener('change', e => {
         container.style.fontSize = e.target.value + 'rem';
     })
+    lineHeightEl.addEventListener('change', e=> {
+        const ps = container.querySelectorAll('p')
+        ps.forEach(p => {
+            p.style.lineHeight = e.target.value;
+        })
+    })
+    const handleSelect = () => {
+        if(!document.getSelection().toString().trim()) return;
+        const selected_txt_El = document.getSelection().anchorNode.parentElement;
+        const selected_txt = document.getSelection().toString();
+        const whole_txt = selected_txt_El.innerText;
+        const segments = whole_txt.split(selected_txt);
+        const newArray = [segments[0], selected_txt, segments[1]];
+        splitEl(selected_txt_El, newArray)
+    }
+
+    const splitEl = (el, txts) => {
+        el.innerHTML = ''
+        const start = document.createElement('span');
+        start.innerHTML = txts[0] ?? '';
+        const the_selected = document.createElement('span');
+        the_selected.innerHTML = txts[1] ?? '';
+        the_selected.classList.add('selected');
+        const end = document.createElement('span');
+        end.innerHTML = txts[2] ?? ''
+        el.append(start,the_selected,end);
+    }
+    document.addEventListener('mouseup',handleSelect)
 
 </script>
 <style>
@@ -76,6 +116,10 @@
         width: 100%;
         padding: 5px;
         background-color: #333;
+    }
+    .selected {
+        text-decoration: underline;
+        text-decoration-color: #F3B664;
     }
 </style>
 </body>

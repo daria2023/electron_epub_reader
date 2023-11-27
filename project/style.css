@@ -11,6 +11,10 @@ body {
     color: #ccc;
     font-family: 华文中宋, Simsun;
 }
+body.light {
+    background-color: #ccc;
+    color: #333;
+}
 
 body::-webkit-scrollbar {
     width: 0.5rem;
@@ -29,6 +33,7 @@ header {
 h1, h2, h3, h4, h5, h6, p {
     color: #ccc;
 }
+
 ul {
     list-style: none;
     display: flex;
@@ -72,4 +77,15 @@ input, textarea, select, option,button {
 
 #file-list {
     margin: 1rem;
+}
+
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6,
+.light p ,
+.light a{
+    color: #333;
 }
