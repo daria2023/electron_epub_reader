@@ -5,6 +5,9 @@
     <link href="/style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
+<script>
+    const encodeTitle = encodeURIComponent(document.title)
+</script>
 <header>
     <a href="/">📚</a>
     <h4>
@@ -16,7 +19,7 @@
     <ul style="margin-left: 2rem">
         <% flows.forEach((flow,index)=> { %>
             <li style="margin-top: 0.5rem;">
-                <a href=<%= "/chapter/" + flow.id%> idx=<%=index%>>
+                <a href=<%= "/htmls/" + encodeURIComponent(title) + '/'+flow.id %> idx=<%=index%>>
                     <%= (flow.title || flow.id.slice(3))%>
                 </a>
             </li>
@@ -24,9 +27,7 @@
     </ul>
 </div>
 
-<script>
-    window.localStorage.setItem('title', document.title );
-</script>
+
 </body>
 </html>
 

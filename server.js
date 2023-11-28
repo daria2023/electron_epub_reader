@@ -26,33 +26,12 @@ const { StringDecoder } = require('node:string_decoder');
 app.set('view engine', 'ejs');
 app.use(express.static('project'));
 
-
+// 获取首页
 app.get("/", (req,res) =>{
     res.sendFile('project/index.html')
 })
-app.get("/list", (req,res) => {
-    fs.readdir(path.join(__dirname, 'books'),(err, files)=>{
-        res.send(JSON.stringify(files));
-    });
-})
-app.get("/notes",(req,res) => {
-    fs.readdir(path.join(__dirname, 'notes'), (err, files) => {
-        res.send(JSON.stringify(files));
-    });
-})
-app.get("/cover", (req,res) =>{
-    res.sendFile(path.join(__dirname,'project','views','cover.html'))
-})
-app.get("/show-note", (req,res) =>{
-    res.sendFile(path.join(__dirname,'project','views','note.html'))
-})
-app.get("/chapter/:id", async (req,res) =>{
-    const chapter_id = req.params.id;
-    const isDone = await handleChapter(chapter_id);
-    if(isDone === 'done') {
-        res.sendFile(path.join(__dirname,'project','views','chapter.html'))
-    }
-})
+
+// 上传文档
 app.post("/", upload.single('file'), (req,res) =>{
     const file = req.file;
 
@@ -72,6 +51,7 @@ app.post("/", upload.single('file'), (req,res) =>{
     });
 
 })
+// 从本地读取文档
 const this_html = {
     meta: null,
     flows: null,
@@ -80,12 +60,36 @@ const this_html = {
 app.get('/books/:filename', async (req,res) => {
     let filename = req.params.filename;
     const filePath = path.join(__dirname, 'books', filename);
+    // 从书本中获取epub信息；
     const html = await handleEpub(filePath);
     this_html.meta = html.meta;
     this_html.flows = html.flows;
-    const isDone = await handleCover(this_html.meta, this_html.flows);
+    // 获取meta flow生成首页
+    const isDone = await handleCover(html.meta, html.flows);
     res.send(isDone);
 })
+app.get("/list", (req,res) => {
+    fs.readdir(path.join(__dirname, 'books'),(err, files)=>{
+        res.send(JSON.stringify(files));
+    });
+})
+app.get("/notes",(req,res) => {
+    fs.readdir(path.join(__dirname, 'notes'), (err, files) => {
+        res.send(JSON.stringify(files));
+    });
+})
+app.get("/cover", (req,res) =>{
+    res.sendFile(path.join(__dirname,'project','views','cover.html'))
+})
+app.get("/show-note", (req,res) =>{
+    res.sendFile(path.join(__dirname,'project','views','note.html'))
+})
+app.get("/htmls/:title/:id", async (req,res) =>{
+    const title = decodeURIComponent(req.params.title)
+    res.sendFile(path.join(__dirname,'htmls',title,`${req.params.id}.html`));
+})
+
+
 app.get('/notes/:filename', async (req,res) => {
     let filename = req.params.filename;
     const filePath = path.join(__dirname, 'notes', filename);
@@ -127,41 +131,51 @@ const handleCover = async (meta, flows) => {
     const cover_path = path.join('project','views','cover.ejs');
     const cover_html_path = path.join('project','views','cover.html');
     const template = fs.readFileSync(cover_path, 'utf8');
-    const ids = flows?.map(flow => {
-        return flow.id
-    })
-    this_html.ids = ids;
+    // 利用传进来的meta和flow生成模板 cover页
+
     const data = {
         title: meta.title,
         content: meta.title,
         author: meta.creator,
         flows,
-        ids,
     };
     const html = ejs.render(template, data);
     await fs.writeFileSync(cover_html_path, html, 'utf8');
     const chapter_note_path = path.join('notes',`${meta.title}.txt`);
+    const this_book_folder = path.join('htmls', meta.title);
     await fs.exists(chapter_note_path,async (exists)=>{
         if(!exists){
             await fs.writeFileSync(chapter_note_path,'');
-
         }
+    })
+    await fs.exists(this_book_folder,async (exists)=>{
+        if(!exists){
+            await fs.mkdir(this_book_folder,{},(e)=>{
+                console.log(e)
+            });
+        }
+    })
+
+
+    const ids = flows.map(f => f.id);
+
+    flows.map(async(flow,idx) => {
+        await handleChapter(flow.id, meta.title,ids,idx)
     })
     return 'done';
 }
 
 
-const handleChapter = async (id) => {
+const handleChapter = async (id, title, ids,idx) => {
     const chapter_path = path.join('project','views','chapter.ejs');
-    const chapter_html_path = path.join('project','views','chapter.html')
+    const chapter_html_path = path.join('htmls',title,`${id}.html`)
     const template = fs.readFileSync(chapter_path, 'utf8');
 
-    const chapterIndex = this_html.ids.indexOf(id);
-    const prevId = chapterIndex - 1 < 0 ? this_html.ids[0] : this_html.ids[chapterIndex - 1];
-    const nextId = chapterIndex + 1 > this_html.ids.length - 1 ? this_html.ids[this_html.ids.length - 1] : this_html.ids[chapterIndex + 1];
+    const prevId = idx - 1 < 0 ? ids[0] : ids[idx - 1];
+    const nextId = idx + 1 > ids.length - 1 ? ids[ids.length - 1] : ids[idx+1];
     const content = await fetchChapter(id);
     const data = {
-        title: this_html.title,
+        title: title,
         content: content,
         id,
         prevId,
