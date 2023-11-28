@@ -5,10 +5,14 @@
     padding: 0;
     box-sizing: border-box;
 }
+:root {
+    --dark-theme-bg:#363636;
+    --dark-theme-clr: #dadada;
+}
 body {
     padding: 0.5rem;
-    background-color: #333;
-    color: #ccc;
+    background-color: var(--dark-theme-bg);
+    color: var(--dark-theme-clr);
     font-family: 华文中宋, Simsun;
 }
 body.light {
@@ -31,7 +35,7 @@ header {
     margin-bottom: 0.5rem;
 }
 h1, h2, h3, h4, h5, h6, p {
-    color: #ccc;
+    color: var(--dark-theme-clr);
 }
 
 ul {
@@ -43,11 +47,11 @@ ul {
 a {
     cursor: pointer;
     text-decoration: none;
-    color: #ccc;
+    color: var(--dark-theme-clr);
 }
 
 li a:hover {
-    color: ivory;
+    color: #e9973f;
 }
 #style-controller {
     display: block;
@@ -68,7 +72,7 @@ li a:hover {
 input, textarea, select, option,button {
     background-color: transparent;
     padding: 5px 0.5rem;
-    color: #ccc;
+    color: var(--dark-theme-clr);
     border: 1px solid #aaa;
     border-radius: 0.25rem;
     letter-spacing: 1px;
@@ -91,4 +95,18 @@ input, textarea, select, option,button {
     border-radius: 3px;
     padding: 1rem;
     margin: 1rem;
+}
+
+blockquote {
+    line-height: 1.5;
+    border: 1px solid gray;
+    padding: 0.5rem;
+    border-radius: 5px;
+}
+
+pre {
+    font-size: 1rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
