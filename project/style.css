@@ -13,7 +13,7 @@ body {
     padding: 0.5rem;
     background-color: var(--dark-theme-bg);
     color: var(--dark-theme-clr);
-    font-family: 华文中宋, Simsun;
+    font-family: 华文中宋, Simsun, sans-serif;
 }
 body.light {
     background-color: #ccc;
@@ -121,4 +121,13 @@ pre {
     line-height: 1.5;
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+#menu-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+}
+#menu-list li {
+    text-decoration: underline;
 }

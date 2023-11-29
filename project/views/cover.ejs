@@ -10,13 +10,12 @@
 </script>
 <header>
     <a href="/">📚</a>
-    <h4>
-        <%= title %>, author:  <%= author %>
-    </h4>
+    <h4>TITLE: <%= title %> </h4>
+    <h4>AUTHOR: <%= author %></h4>
 </header>
 <div id="menu">
     <h4 style="letter-spacing: 2px">MENU</h4>
-    <ul style="margin-left: 2rem">
+    <ul style="margin-left: 2rem" id="menu-list">
         <% flows.forEach((flow,index)=> { %>
             <li style="margin-top: 0.5rem;">
                 <a href=<%= "/htmls/" + encodeURIComponent(title) + '/'+flow.id %> idx=<%=index%>>
