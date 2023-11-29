@@ -4,6 +4,7 @@ const express = require("express");
 const multer = require("multer");
 const axios = require("axios")
 const ejs = require('ejs');
+const {handleEpub, fetchChapter} = require("./epub")
 
 
 const app = express();
@@ -16,12 +17,6 @@ const upload = multer({ dest: 'books/' ,fileFilter(req, file, callback) {
     filename: function (req, file, callback) {
         callback(null, file.originalname);
     }});
-
-const {handleEpub, fetchChapter} = require("./epub")
-
-const { StringDecoder } = require('node:string_decoder');
-
-
 
 app.set('view engine', 'ejs');
 app.use(express.static('project'));

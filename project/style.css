@@ -36,6 +36,7 @@ header {
 }
 h1, h2, h3, h4, h5, h6, p {
     color: var(--dark-theme-clr);
+    margin-bottom: 1rem;
 }
 
 ul {
@@ -96,8 +97,18 @@ input, textarea, select, option,button {
     border-radius: 3px;
     padding: 1rem;
     margin: 1rem;
+    position: relative;
 }
-
+#file-list::before,
+#notes-list::before{
+    content: '📖';
+    position: absolute;
+    top: -0.5rem;
+    left: -0.5rem;
+}
+#notes-list::before{
+    content: '📝';
+}
 blockquote {
     line-height: 1.5;
     border: 1px solid gray;
