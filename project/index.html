@@ -17,13 +17,20 @@
 <script>
     const file_list  = document.getElementById('file-list');
     const note_list = document.getElementById('notes-list');
+    const createEl = (el,info) => {
+        const ele = document.createElement(el);
+        ele.innerHTML = info;
+        return ele;
+    }
     fetch('/list').then(res => {
         return (res.json());
     }).then(data => {
         if(data.length > 0) {
             data.map(li => {
                 const l  = document.createElement('li');
-                l.innerHTML = `<a>>> ${li}</a>`;
+                const a = createEl('a',li);
+                const delBtn = createEl('button','delete');
+                l.append(a, delBtn);
                 file_list.appendChild(l);
                 l.addEventListener('click',async ()=>{
                     const encodedFilename = encodeURIComponent(li);
@@ -46,7 +53,9 @@
         if(data.length > 0) {
             data.map(li => {
                 const l  = document.createElement('li');
-                l.innerHTML = `<a>>> ${li}</a>`;
+                const a = createEl('a',li);
+                const delBtn = createEl('button','delete');
+                l.append(a, delBtn);
                 note_list.appendChild(l);
                 l.addEventListener('click',async ()=>{
                     const encodedFilename = encodeURIComponent(li);

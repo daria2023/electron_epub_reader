@@ -2,7 +2,7 @@ const EPub = require("epub");
 const fs = require("fs");
 const nodePath = require("path");
 let epub;
-const handleEpub = (path) => {
+const handleEpub = (path, fileName) => {
     return new Promise((resolve, reject) => {
         epub = new EPub(path, '/images/', '/links/');
         const gen_html = {}
@@ -14,7 +14,7 @@ const handleEpub = (path) => {
                 resolve(gen_html);
             })
             epub.on('error',(e)=>{
-                reject(e)
+                throw Error(`解析epub失败，${e}`)
             })
             epub.parse();
         } catch (e) {
@@ -27,18 +27,19 @@ const fetchChapter = id => {
     try {
         return new Promise((resolve, reject) => {
             epub?.getChapter(id,((e,text) => {
-
                 if(e) {
                     reject(e)
                 } else {
-                    const imgElements = extractImgElements(text);
-                    downloadImgs(imgElements)
+                    const imgs1 = extractImgElements1(text);
+                    downloadImgs(imgs1)
+                    // const imgElements = extractImgElements(text);
+                    // downloadImgs(imgElements)
                     resolve(text);
                 }
             }))
         })
     } catch (e) {
-        reject(e)
+        throw(e)
     }
 
 }
@@ -65,8 +66,7 @@ const fetchImg = (id,imgPath) => {
     });
 }
 
-
-const extractImgElements = (text) => {
+const extractImgElements1 = (text) => {
     const imgRegex = /<img\s[^>]*src\s*=\s*['"]([^'"]+)['"][^>]*>/gi;
     const imgElements = [];
     let match;
@@ -75,8 +75,33 @@ const extractImgElements = (text) => {
     }
     return imgElements;
 };
+const extractImgElements = (text) => {
+    const imgRegex = /<img\s([^>]*)>/gi;
+    // const imgRegex = /<img\s[^>]*src\s*=\s*['"]([^'"]+)['"][^>]*>/gi;
 
 
+    const imgElements = [];
+    let match;
+    while ((match = imgRegex.exec(text)) !== null) {
+        const imgTag = match[0];
+        const idMatch = imgTag.match(/\sid\s*=\s*['"]([^'"]+)['"]/);
+        const id = idMatch ? idMatch[1] : '';
+        const srcMatch = imgTag.match(/\ssrc\s*=\s*['"]([^'"]+)['"]/);
+
+        if (!srcMatch) {
+            const newSrc = id ? `/images/${id}` : '';
+            const modifiedImgTag = srcMatch
+                ? imgTag.replace(/\ssrc\s*=\s*['"]([^'"]+)['"]/, ` src="${newSrc}"`)
+                : imgTag.replace(/<img\s/, `<img src="${newSrc}" `);
+
+            imgElements.push(modifiedImgTag);
+        } else {
+            imgElements.push(imgTag);
+        }
+    }
+
+    return imgElements;
+};
 
 
 

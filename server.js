@@ -31,13 +31,15 @@ app.post("/", upload.single('file'), (req,res) =>{
     const file = req.file;
 
     const oldPath = file.path;
-    const newPath = `books/${file.originalname}`;
+    const restructuredName = replace_spaces(file.originalname);
+
+    const newPath = `books/${restructuredName}`;
 
     fs.rename(oldPath, newPath, async (err) => {
         if (err) {
-            res.status(500).send('Internal Server Error');
+            res.status(500).send('Failed to save the file!');
         } else {
-            const response = await axios.get(`http://localhost:9999/books/${file.originalname}`);
+            const response = await axios.get(`http://localhost:9999/books/${restructuredName}`);
             const data = await response.data;
             if(data === 'done') {
                 res.status(200).send('ok');
@@ -53,15 +55,19 @@ const this_html = {
     ids:null,
 }
 app.get('/books/:filename', async (req,res) => {
-    let filename = req.params.filename;
+    let filename = replace_spaces(req.params.filename);
     const filePath = path.join(__dirname, 'books', filename);
-    // 从书本中获取epub信息；
-    const html = await handleEpub(filePath);
-    this_html.meta = html.meta;
-    this_html.flows = html.flows;
-    // 获取meta flow生成首页
-    const isDone = await handleCover(html.meta, html.flows);
-    res.send(isDone);
+    const createBookPath = await checkFilePath(filePath);
+
+    if(createBookPath === 'ok') {
+        const html = await handleEpub(filePath, filename);
+        // 获取meta flow生成首页
+        const isDone = await handleCover(html.meta, html.flows);
+        res.send(isDone);
+    } else {
+        res.status(500).send('获取书本失败');
+    }
+
 })
 app.get("/list", (req,res) => {
     fs.readdir(path.join(__dirname, 'books'),(err, files)=>{
@@ -123,65 +129,120 @@ const handleNote = async (note) =>{
     return 'done';
 }
 const handleCover = async (meta, flows) => {
-    const cover_path = path.join('project','views','cover.ejs');
-    const cover_html_path = path.join('project','views','cover.html');
-    const template = fs.readFileSync(cover_path, 'utf8');
-    // 利用传进来的meta和flow生成模板 cover页
-
-    const data = {
-        title: meta.title,
-        content: meta.title,
-        author: meta.creator,
-        flows,
-    };
-    const html = ejs.render(template, data);
-    await fs.writeFileSync(cover_html_path, html, 'utf8');
-    const chapter_note_path = path.join('notes',`${meta.title}.txt`);
-    const this_book_folder = path.join('htmls', meta.title);
-    await fs.exists(chapter_note_path,async (exists)=>{
-        if(!exists){
-            await fs.writeFileSync(chapter_note_path,'');
-        }
-    })
-    await fs.exists(this_book_folder,async (exists)=>{
-        if(!exists){
-            await fs.mkdir(this_book_folder,{},(e)=>{
-                console.log(e)
-            });
-        }
-    })
-
-
+    const bookTitle = replace_spaces(meta.title)
+    const cover_path = path.join(__dirname,'project','views','cover.ejs');
+    const cover_html_path = path.join(__dirname,'project','views','cover.html');
+    const chapter_note_path = path.join(__dirname,'notes',`${bookTitle}.txt`);
+    const this_book_folder = path.join(__dirname,'htmls', bookTitle);
     const ids = flows.map(f => f.id);
+    return new Promise(async (resolve, reject) => {
+        try {
+            const template = fs.readFileSync(cover_path, 'utf8');
+            const data = {
+                title: bookTitle,
+                content: bookTitle,
+                author: meta.creator,
+                flows,
+            };
+            const html = ejs.render(template, data);
+            // 写封面页
+            await fs.writeFileSync(cover_html_path, html, 'utf8');
+            // 生成notes和分页html；
+            const writeNotesPath = await checkFilePath(chapter_note_path);
+            const writePagesPath = await checkFilePath(this_book_folder);
+            if(writeNotesPath !== 'ok' || writePagesPath !== 'ok'){
+                throw Error('生成notes或者分页htmls出错');
+            }
+            const res = await checkChaptersExists(this_book_folder, ids.length);
+            if(res === 'ok') {
+                resolve('done');
+            }
+            else {
+                const allChaps = flows.map(async(flow,idx) => {
+                    return handleChapter(flow.id, bookTitle,ids,idx)
+                })
+                await handleAllChapters(allChaps)
+                resolve('done');
+            }
 
-    flows.map(async(flow,idx) => {
-        await handleChapter(flow.id, meta.title,ids,idx)
+
+        } catch (e) {
+            reject(`生成页面出错:${e}`);
+        }
     })
-    return 'done';
 }
 
+const handleAllChapters = (a) => {
+    Promise.all(a).catch(error => {
+            console.error('promise all chapters wrong', error);
+        });
 
+}
+const checkChaptersExists = (path, nums) => {
+    return new Promise((resolve, reject) => {
+        try {
+            fs.readdir(path, (err, files) => {
+                resolve(files.length === nums ? 'ok' : false)
+            });
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 const handleChapter = async (id, title, ids,idx) => {
-    const chapter_path = path.join('project','views','chapter.ejs');
-    const chapter_html_path = path.join('htmls',title,`${id}.html`)
-    const template = fs.readFileSync(chapter_path, 'utf8');
+    return new Promise(async (resolve, reject) => {
+        try {
+            const chapter_path = path.join('project','views','chapter.ejs');
+            const chapter_html_path = path.join('htmls',title,`${id}.html`)
+            const template = fs.readFileSync(chapter_path, 'utf8');
 
-    const prevId = idx - 1 < 0 ? ids[0] : ids[idx - 1];
-    const nextId = idx + 1 > ids.length - 1 ? ids[ids.length - 1] : ids[idx+1];
-    const content = await fetchChapter(id);
-    const data = {
-        title: title,
-        content: content,
-        id,
-        prevId,
-        nextId,
-    };
+            const prevId = idx - 1 < 0 ? ids[0] : ids[idx - 1];
+            const nextId = idx + 1 > ids.length - 1 ? ids[ids.length - 1] : ids[idx+1];
+            const content = await fetchChapter(id);
+            const data = {
+                title: title,
+                content: content,
+                id,
+                prevId,
+                nextId,
+            };
 
-    const html = ejs.render(template, data);
-    await fs.writeFileSync(chapter_html_path, html, 'utf8');
-    return 'done';
+            const html = ejs.render(template, data);
+            await fs.writeFileSync(chapter_html_path, html, 'utf8');
+            resolve('ok')
+        } catch (e) {
+            reject(`生成章节html出错: ${e}`)
+        }
+    })
 }
 
+const replace_spaces = str => {
+    return str.replace(/[\s:]+/g, '_');
+}
+const checkFilePath = async (path) =>{
+    return new Promise(async (resolve, reject) => {
+        try {
+            await fs.exists(path,async (exists)=>{
+                if(!exists){
+                    await fs.mkdir(path,{recursive:true},(e)=>{
+                        if(!e) {
+                            resolve('ok')
+                        } else {
+                            throw(`创建${path}失败,${e}`)
+                        }
+
+                    });
+                } else {
+                    resolve('ok');
+                }
+            })
+        } catch (e) {
+            reject(e);
+        }
+
+    })
+
+}
 
 const run = () => {
     app.listen('9999',()=>{
