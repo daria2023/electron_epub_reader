@@ -3,3 +3,5 @@ books
 images
 notes
 htmls
+project/views/chapter.html
+project/views/note.html
