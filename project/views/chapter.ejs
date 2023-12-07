@@ -14,7 +14,7 @@
     </div>
     <div class="chapter-style">
         <button id="style-set-btn">⚙️</button>
-        <button id="theme-set-btn"></button>
+        <button id="theme-set-btn">☀️</button>
         <div id="style-controller" class="hide">
             <div>
                 <label for="font-select">Choose a font:</label>
@@ -60,24 +60,16 @@
 </footer>
 <script src="../../index.js"></script>
 <script>
-
-//    const themeBtn = document.getElementById('theme-set-btn');
-//    let currTheme = localStorage.getItem('theme');
-//    if(!currTheme) {
-//        localStorage.setItem('theme','dark');
-//        themeBtn.innerHTML = '☀️';
-//    }
-//    themeBtn.addEventListener('click',()=>{
-//        if(currTheme === 'dark') {
-//            themeBtn.innerHTML = '☀️';
-//            document.body.classList.contains('light') && document.body.classList.remove('light');
-//            localStorage.setItem('theme','dark');
-//        } else {
-//            themeBtn.innerHTML = '🌙';
-//            document.body.classList.add('light');
-//            localStorage.setItem('theme','light');
-//        }
-//    })
+ const themeBtn = document.getElementById('theme-set-btn');
+   themeBtn.addEventListener('click',()=>{
+       if(document.body.classList.contains('light')) {
+           document.body.classList.remove('light');
+           themeBtn.innerHTML = '🌙'
+       } else {
+           document.body.classList.add('light');
+           themeBtn.innerHTML = '☀️'
+       }
+   })
     const styleEl = document.getElementById('style-controller');
     const styleSetBtn = document.getElementById('style-set-btn');
     styleSetBtn.addEventListener('click',()=>{
@@ -93,7 +85,10 @@
         container.style.fontFamily = e.target.value;
     })
     sizeEl.addEventListener('change', e => {
-        container.style.fontSize = e.target.value + 'rem';
+        const ps = container.querySelectorAll('p')
+        ps.forEach(p => {
+            p.style.fontSize = e.target.value + 'rem';
+        })
     })
     lineHeightEl.addEventListener('change', e=> {
         const ps = container.querySelectorAll('p')
@@ -108,11 +103,28 @@
         const whole_txt = selected_txt_El.innerText;
         const segments = whole_txt.split(selected_txt);
         const newArray = [segments[0], selected_txt, segments[1]];
-        splitEl(selected_txt_El, newArray);
+        if(segments.length === 1) {
+            crossParagrah();
+        } else {
+            splitEl(selected_txt_El, newArray);
+        }
         storeTxts(selected_txt);
     }
 
+    const crossParagrah = () => {
+        const newParagraph = document.createElement('p');
+        const selectedRange = window.getSelection().getRangeAt(0);
+        newParagraph.appendChild(selectedRange.cloneContents());
+        selectedRange.startContainer.parentNode.innerHTML = '';
+        selectedRange.endContainer.parentNode.innerHTML = '';
+        selectedRange.startContainer.appendChild(newParagraph);
+        selectedRange.startContainer.classList.add('selected');
+    }
+
     const splitEl = (el, txts) => {
+        if(!txts[0] && !txts[2]) {
+           return el.classList.add('selected');
+        }
         el.innerHTML = ''
         const start = document.createElement('span');
         start.innerHTML = txts[0] ?? '';
@@ -125,9 +137,8 @@
     }
 
     const storeTxts = async (txt)=>{
-        const titleValue = localStorage.getItem('title');
         const formData = new FormData();
-        formData.append('title', titleValue);
+        formData.append('title', document.title);
         formData.append('content', txt);
 
         const res = await fetch(`/notes`, {
@@ -137,9 +148,6 @@
         console.log(res)
     }
     document.addEventListener('mouseup',handleSelect);
-
-
-
 </script>
 <style>
     header {

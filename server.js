@@ -110,7 +110,11 @@ app.post('/notes', upload.single('file'),async (req, res)=>{
     const txtPath = path.join(__dirname,'notes', `${title}.txt`);
     const passed = `\r\n ${content} \r\n --${new Date().toTimeString()} \r\n`;
     await fs.appendFile(txtPath, passed,'utf-8',(e)=>{
-        console.log(e)
+        if(!e) {
+            res.sendStatus(200)
+        } else {
+            res.sendStatus(500)
+        }
     });
 
 })
