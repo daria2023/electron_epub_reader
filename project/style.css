@@ -6,7 +6,7 @@
     box-sizing: border-box;
 }
 :root {
-    --dark-theme-bg:#363636;
+    --dark-theme-bg:#222;
     --dark-theme-clr: #dadada;
 }
 body {
@@ -19,7 +19,6 @@ body.light {
     background-color: #ccc;
     color: #333;
 }
-
 body::-webkit-scrollbar {
     width: 0.5rem;
 }
@@ -111,7 +110,7 @@ input, textarea, select, option,button {
 }
 blockquote {
     line-height: 1.5;
-    border: 1px solid gray;
+    border: 1px solid #808080FF;
     padding: 0.5rem;
     border-radius: 5px;
 }
