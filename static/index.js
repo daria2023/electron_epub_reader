@@ -25,11 +25,10 @@ fetchData({url:'/books', method:'GET'}, 'No books yet, add some!', file_list, (d
         l.append(a);
         file_list.appendChild(l);
         l.addEventListener('click', async () => {
-            const fileName = li.split('.epub');
-
             const encodedFilename = encodeURIComponent(li);
             const res = await fetch('/read/'+ encodedFilename);
-                if(res.code === 200) {
+            const data = await res.json()
+                if(data.code === 200) {
                     window.location.replace('http://localhost:9877/info/'+encodedFilename);
                 }
         })
@@ -44,14 +43,18 @@ fetchData({url:'/notes', method:'GET'}, 'No books yet, add some!', note_list, (d
         l.append(a);
         note_list.appendChild(l);
         l.addEventListener('click', async () => {
-            // const encodedFilename = encodeURIComponent(li);
-            // const res = await fetch('/books/'+ encodedFilename);
-            // const data = await res.text();
-            //     if(data === 'done') {
-            //         window.location.replace('http://localhost:9999/cover');
-            //     }
-            // })
-        })
+            const encodedFilename = encodeURIComponent(li);
+            console.log('1121')
+
+            const res = await fetch('/read/'+ encodedFilename);
+            console.log('1121')
+            const data = await res.json();
+            console.log(data, await res)
+                if(data.code === 200) {
+                    console.log('okk')
+                    window.location.replace(`http://localhost:9877/info/${li}`);
+                }
+            })
     })
 })
 

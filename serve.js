@@ -6,7 +6,7 @@ const axios = require("axios");
 const ejs = require('ejs');
 const Parser = require("./parser");
 const { isFolderExist, readFolder, replace_spaces } = require("./util/folder")
-const { handleBook } = require("./util/bookHandler")
+const { handleBook, ejsRender } = require("./util/bookHandler")
 
 
 
@@ -18,6 +18,8 @@ app.use(express.static('static'));
 const staticHolder = path.join(__dirname,'static');
 const booksHolder = path.join(__dirname,'books');
 const notesHolder = path.join(__dirname,'notes');
+const ejsModelHolder = path.join(staticHolder,'models');
+const ejsGeneratedHolder = path.join(staticHolder,'generated')
 
 
 // 首页面获取
@@ -28,12 +30,25 @@ app.get('/', (req, res) => {
 
 // 信息页获取
 app.get('/info/:bookName', async (req, res) => {
-    let filename = replace_spaces(req.params.bookName);
-    console.log(111,req.params.bookName)
-    const filePath = path.join(__dirname, 'books', filename);
-    const fileExist = await isFolderExist(filePath);
-    console.log(fileExist);
+    const bookPath = path.join(booksHolder,req.params.bookName)
+    const info_ejs_path = path.join(ejsModelHolder,'info.ejs');
+    const info_generated_path = path.join(ejsGeneratedHolder,'info.html');
+
+    const book = new Parser(bookPath);
+    const bookInfo  = await handleBook(book);
+    if(bookInfo.code === 200) {
+        // console.log(bookInfo.data.menu)
+        const ejsGenerated = await ejsRender(ejs,info_ejs_path,info_generated_path,bookInfo.data)
+        if(ejsGenerated === 200){
+            res.sendFile(info_generated_path);
+        }
+
+    } else {
+        res.send({code: 400, msg: 'No info found!'})
+    }
+
 })
+
 
 // 进入首页接口管理
 app.get('/books', async (req, res) => {

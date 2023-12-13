@@ -5,26 +5,38 @@
     <link href="/style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-<script>
-    const encodeTitle = encodeURIComponent(document.title)
-</script>
+
 <header>
-    <a href="/">📚</a>
-    <h4>TITLE: <%= title %> </h4>
-    <h4>AUTHOR: <%= author %></h4>
+    <a href="/" id="home_direct">📚</a>
+    <table>
+        <thead>
+        <th colspan="2"><%= title %></th>
+
+        </thead>
+        <tbody>
+
+        <tr>
+            <td>Author</td>
+            <td><%= creator %></td>
+        </tr>
+        <tr>
+            <td>Publisher</td>
+            <td><%= publisher %></td>
+        </tr>
+        </tbody>
+    </table>
 </header>
-<div id="menu">
-    <h4 style="letter-spacing: 2px">MENU</h4>
-    <ul style="margin-left: 2rem" id="menu-list">
-        <% flows.forEach((flow,index)=> { %>
-            <li style="margin-top: 0.5rem;">
-                <a href=<%= "/htmls/" + encodeURIComponent(title) + '/'+flow.id %> idx=<%=index%>>
-                    <%= (flow.title || flow.id.slice(3))%>
+<main id="menu">
+    <ul>
+        <% menu.forEach(function(m) { %>
+            <li>
+                <a href=<%= m.src%> >
+                    <%= m.text %>
                 </a>
-            </li>
-        <% }) %>
+        <% }); %>
     </ul>
-</div>
+
+</main>
 
 
 </body>

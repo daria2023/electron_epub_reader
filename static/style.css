@@ -130,3 +130,25 @@ pre {
 #menu-list li {
     text-decoration: underline;
 }
+
+table,
+td {
+    padding: 0.25rem;
+    border: 1px solid #333;
+}
+
+thead,
+tfoot {
+    color: #fff;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#home_direct {
+    position: fixed;
+    top: 0.5rem;
+    left: 1rem;
+}

@@ -58,13 +58,12 @@ module.exports = class Parser {
 
                 let xmlString = data.toString("utf-8").trim();
                 const parser = new xml2js.Parser();
-                try {
                     parser.parseStringPromise(xmlString).then(function (result) {
                         cb(result);
+                    }).catch(err => {
+                        cb(null, err)
                     })
-                } catch (e) {
-                    throw Error(e);
-                }
+
             } else {
                 cb(data)
             }
@@ -83,19 +82,24 @@ module.exports = class Parser {
     }
 
     _findEntryAndRead(name,cb, xml) {
-        this._contentPath.then(path => {
-            path[path.length - 1] = name;
-            const menuPath = path.join('/');
-            const menuEntry = this._zip.getEntry(menuPath);
-            this._readFilePlus(menuEntry, cb,xml)
-        })
+        try {
+            this._contentPath.then(path => {
+                path[path.length - 1] = name;
+                const menuPath = path.join('/');
+                const menuEntry = this._zip.getEntry(menuPath);
+                this._readFilePlus(menuEntry, cb,xml)
+            })
+        } catch (e) {
+            // console.log(222, e)
+        }
+
     }
 
     getMenu() {
          return new Promise( (resolve, reject) => {
              try {
                  const menu = [];
-                 this._findEntryAndRead('toc.ncx', data => {
+                 this._findEntryAndRead('toc.ncx', (data,err) => {
                      if(data) {
                          data['ncx']['navMap'][0]['navPoint']?.map(nav => {
                              menu.push({
@@ -104,10 +108,12 @@ module.exports = class Parser {
                              })
                          })
                          resolve(menu)
+                     } else {
+                         console.log(err)
+                         resolve([])
                      }
                  },true)
              } catch (e) {
-
                 reject(e)
              }
          })
@@ -138,6 +144,7 @@ module.exports = class Parser {
                 const bookInfo = {}
                 this._findEntryAndRead('content.opf', (data)=>{
                     const items = (data['package']['manifest'][0]['item']);
+                    console.log(data['package']['manifest'][0])
                     const contents = items.map(item => item['$']);
                     const chapters = contents.filter(item => item['media-type'] === 'application/xhtml+xml');
                     const images = contents.filter(item => item['media-type'] === 'image/jpeg' || item['media-type'] === 'image/png');
@@ -153,6 +160,28 @@ module.exports = class Parser {
             }
         })
     }
+
+        getSpine () {
+            // manifest;
+            return new Promise( (resolve, reject) => {
+                try {
+                    const bookInfo = {}
+                    this._findEntryAndRead('content.opf', (data)=>{
+                        const spine = (data['package']['spine'][0]['itemref']);
+                        const ids = spine.map( s => s['$'])
+                        const manifestItems = (data['package']['manifest'][0]['item']);
+                        const mans = manifestItems.map(m => m['$'])
+                        const spine_menu = ids.map( id => {
+                            return mans.find(m => m.id === id.idref);
+                        })
+
+                        resolve(spine_menu);
+                    },true)
+                } catch (e) {
+                    reject(e)
+                }
+            })
+        }
 
     getChapters () {
          return new Promise((resolve, reject)=>{
@@ -194,10 +223,17 @@ module.exports = class Parser {
 
 }
 
+// const ppp = new Parser('./books/aa.epub');
 
+// ppp.getSpine().then(m => {
+//     console.log(m);
+// })
 
-// parser.getMenu().then(res=>{
-//     console.log(res)
+// ppp.getMenu().then(res=>{
+//     ppp.getSpine().then((spine)=>{
+//         console.log(spine, res)
+//
+//     })
 // })
 
 // parser.getBookInfo().then(res => {
@@ -207,3 +243,5 @@ module.exports = class Parser {
 // parser.getImgs().then(res=>{
 //     // console.log(res.length)
 // })
+
+
