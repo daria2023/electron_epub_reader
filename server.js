@@ -249,9 +249,10 @@ const checkFilePath = async (path) =>{
 }
 
 const run = () => {
-    app.listen('9999',()=>{
+    app.listen('9877',()=>{
         console.log("server is running now!")
     })
 }
+run()
 
-module.exports = {run}
+// module.exports = {run}

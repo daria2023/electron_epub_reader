@@ -7,6 +7,7 @@ const ejs = require('ejs');
 const Parser = require("./parser");
 const { isFolderExist, readFolder, replace_spaces } = require("./util/folder")
 const { handleBook, ejsRender } = require("./util/bookHandler")
+require('dotenv').config()
 
 
 
@@ -97,8 +98,18 @@ app.get('/read/:name', async (req, res) => {
     }
 
 })
-app.listen( 9877, () => {
-    console.log("the serve is running on the port 9877")
-})
 
+
+const serve = (port) => {
+    const server = app.listen(port,()=>{
+        console.log(`Server has been running on ${port}`)
+    });
+    const handleErr = ()=> server.listen(++port)
+    server.on('error',(err)=>{
+        if(err.code === 'EADDRINUSE') {
+            handleErr();
+        }
+    })
+}
+serve(process.env.PORT);
 
