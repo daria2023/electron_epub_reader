@@ -26,13 +26,18 @@
         </tbody>
     </table>
 </header>
+<div>
+    <%= bookName%>
+</div>
 <main id="menu">
     <ul>
         <% menu.forEach(function(m) { %>
             <li>
-                <a href=<%= m.src%> >
+                <a href=<%= 'http://localhost:9987/chapter/' +  bookName  + m.src%> >
                     <%= m.text %>
+                    <%= bookName %>
                 </a>
+                <span>1111: <%= m.src %>
         <% }); %>
     </ul>
 

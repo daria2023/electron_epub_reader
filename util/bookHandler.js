@@ -1,22 +1,24 @@
 const path = require("path");
-const fs = require("fs");
+const fs= require("fs");
 
-const handleBook = (book) => {
+
+
+
+const handleBook = (book,name) => {
     book.init();
     return new Promise((resolve, reject) => {
         try {
             book.getBookInfo().then(info => {
+                info.bookName = name;
                 book.getMenu().then(menu => {
                     if(menu.length === 0){
                         book.getSpine().then(spine =>{
-                            console.log(spine)
                             info.menu = spine.map(s  => {
                                 return {
                                     src: s.href,
                                     text: s.id
                                 }
                             })
-                            console.log(info.menu)
                             resolve({
                                 code: 200,
                                 data: info
