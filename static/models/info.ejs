@@ -28,17 +28,15 @@
 </header>
 <main id="menu">
     <ul>
-        <% menu.forEach(function(m) { %>
+        <% menu.forEach(function(m,idx) { %>
             <li>
-                <a href=<%= m.src%> >
-                    <%= m.text %>
+                <a href=<%= '/ing/' + localName + '/' +m.src + '/' + idx%> >
+                   <span><%= idx + 1%>  </span> <%= m.text %>
                 </a>
         <% }); %>
     </ul>
 
 </main>
-
-
 </body>
 </html>
 

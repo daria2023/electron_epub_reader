@@ -36,5 +36,7 @@ const replace_spaces = str => {
     return str.replace(/[\s:]+/g, '_');
 }
 
-
-module.exports = { isFolderExist, readFolder, replace_spaces }
+const reduceFileType = str =>{
+    return str.replace(/.epub$/, '');
+}
+module.exports = { isFolderExist, readFolder, replace_spaces, reduceFileType }

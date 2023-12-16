@@ -9,14 +9,14 @@ const handleBook = (book) => {
                 book.getMenu().then(menu => {
                     if(menu.length === 0){
                         book.getSpine().then(spine =>{
-                            console.log(spine)
+                            // console.log(spine)
                             info.menu = spine.map(s  => {
                                 return {
                                     src: s.href,
                                     text: s.id
                                 }
                             })
-                            console.log(info.menu)
+                            // console.log(info.menu)
                             resolve({
                                 code: 200,
                                 data: info
@@ -42,6 +42,26 @@ const handleBook = (book) => {
 
 }
 
+const handleBookContent = (book, chapter) => {
+    book.init();
+    return new Promise(async (resolve, reject) => {
+        try {
+            const received = await book.getChapter(chapter);
+            resolve({
+                code: 200,
+                content: received
+            })
+        } catch (e) {
+            resolve({
+                code:400,
+                msg:'Cant get the chapter'
+            })
+        }
+
+    })
+
+}
+
 const ejsRender = (ejs, modelPath, generatedPath, passedData) => {
     return new Promise( (resolve, reject) => {
         try {
@@ -57,4 +77,4 @@ const ejsRender = (ejs, modelPath, generatedPath, passedData) => {
     })
 }
 
-module.exports = {handleBook, ejsRender}
+module.exports = {handleBook, ejsRender, handleBookContent}

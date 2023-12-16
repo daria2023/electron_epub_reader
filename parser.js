@@ -144,7 +144,7 @@ module.exports = class Parser {
                 const bookInfo = {}
                 this._findEntryAndRead('content.opf', (data)=>{
                     const items = (data['package']['manifest'][0]['item']);
-                    console.log(data['package']['manifest'][0])
+                    // console.log(data['package']['manifest'][0])
                     const contents = items.map(item => item['$']);
                     const chapters = contents.filter(item => item['media-type'] === 'application/xhtml+xml');
                     const images = contents.filter(item => item['media-type'] === 'image/jpeg' || item['media-type'] === 'image/png');
@@ -200,6 +200,19 @@ module.exports = class Parser {
 
                      })
                  })
+             } catch (e) {
+                 reject(e);
+             }
+         })
+    }
+    getChapter(href) {
+         return new Promise((resolve, reject)=>{
+             try {
+                 this._findEntryAndRead(href,   (data) => {
+                     const str  = data.toString('utf-8');
+                     const formatted = this._restructureString(str);
+                     resolve(formatted)
+                 }, false)
              } catch (e) {
                  reject(e);
              }

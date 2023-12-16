@@ -57,7 +57,3 @@ fetchData({url:'/notes', method:'GET'}, 'No books yet, add some!', note_list, (d
             })
     })
 })
-
-const reduceFileType = str =>{
-    return str.replace(/[\s:]+/g, '');
-}

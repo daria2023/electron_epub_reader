@@ -5,8 +5,8 @@ const multer = require("multer");
 const axios = require("axios");
 const ejs = require('ejs');
 const Parser = require("./parser");
-const { isFolderExist, readFolder, replace_spaces } = require("./util/folder")
-const { handleBook, ejsRender } = require("./util/bookHandler")
+const { isFolderExist, readFolder, replace_spaces, reduceFileType } = require("./util/folder")
+const { handleBook, ejsRender, handleBookContent } = require("./util/bookHandler")
 require('dotenv').config()
 
 
@@ -38,7 +38,8 @@ app.get('/info/:bookName', async (req, res) => {
     const book = new Parser(bookPath);
     const bookInfo  = await handleBook(book);
     if(bookInfo.code === 200) {
-        // console.log(bookInfo.data.menu)
+        //
+        bookInfo.data.localName = reduceFileType(req.params.bookName);
         const ejsGenerated = await ejsRender(ejs,info_ejs_path,info_generated_path,bookInfo.data)
         if(ejsGenerated === 200){
             res.sendFile(info_generated_path);
@@ -50,6 +51,33 @@ app.get('/info/:bookName', async (req, res) => {
 
 })
 
+// 阅读页获取
+
+app.get('/ing/:bookName/:chapter/:menuIdx', async (req, res) => {
+    const bookPath = path.join(booksHolder,`${req.params.bookName}.epub`);
+    const chapter = req.params.chapter;
+    const chapter_ejs_path =  path.join(ejsModelHolder,'chapter.ejs');
+    const chapter_generated_path = path.join(ejsGeneratedHolder,'chapter.html');
+
+    const book = new Parser(bookPath);
+    const bookChapter  = await handleBookContent(book, chapter);
+
+    if(bookChapter.code === 200) {
+        const data = {
+            content: bookChapter.content,
+            title: req.params.bookName,
+            idx: req.params.menuIdx
+        }
+        const ejsGenerated = await ejsRender(ejs,chapter_ejs_path,chapter_generated_path,data)
+        if(ejsGenerated === 200){
+            res.sendFile(chapter_generated_path);
+        }
+
+    } else {
+        res.send({code: 400, msg: 'No Chapter found!'})
+    }
+
+})
 
 // 进入首页接口管理
 app.get('/books', async (req, res) => {
