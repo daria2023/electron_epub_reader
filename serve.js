@@ -106,7 +106,7 @@ app.get('/read/:name', async (req, res) => {
 
 })
 
-app.get('*',(req, res) => {
+app.get('/*', async (req, res) => {
     res.sendFile(notFoundPage)
 })
 app.listen( 9877, () => {
