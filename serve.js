@@ -52,13 +52,6 @@ app.post("/", upload.single('file'), (req,res) =>{
             res.status(500).send('Failed to save the file!');
         }
         res.status(200).send('ok');
-        // else {
-        //     const response = await axios.get(`http://localhost:9999/books/${restructuredName}`);
-        //     const data = await response.data;
-        //     if(data === 'done') {
-        //         res.status(200).send('ok');
-        //     }
-        // }
     });
 
 })

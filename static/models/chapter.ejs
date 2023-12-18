@@ -6,6 +6,11 @@
 </head>
 <body>
 <header>
+    <div class="nav">
+        <a>Prev</a>
+        <a href="/">📚</a>
+        <a>Next</a>
+    </div>
     <div class="chapter-style">
         <button id="style-set-btn">⚙️</button>
         <button id="theme-set-btn">☀️</button>
@@ -49,15 +54,28 @@
 </div>
 
 <script>
+   // theme controller;
+   const isLight = localStorage.getItem('style') === 'light';
    const themeBtn = document.getElementById('theme-set-btn');
+
    themeBtn.addEventListener('click',()=>{
        document.body.classList.toggle('light');
-       if(document.body.classList.contains('light')) {
+       handleLight(document.body.classList.contains('light'));
+   });
+
+   const handleLight = (light) => {
+       if(light) {
+           document.body.classList.add('light')
+           localStorage.setItem('style','light');
            themeBtn.innerHTML = '🌙'
        } else {
-           themeBtn.innerHTML = '☀️'
+           document.body.classList.contains('light') &&document.body.classList.remove('light')
+           themeBtn.innerHTML = '☀️';
+           localStorage.setItem('style','');
        }
-   });
+   }
+
+   handleLight(isLight);
 
 
    const styleEl = document.getElementById('style-controller');
@@ -88,13 +106,12 @@
        })
    });
 
-   document.addEventListener('click', (event) => {
+   // TODO click other area and close the style controller!
 
+   document.addEventListener('click', (event) => {
        let isSelf = styleEl.contains(event.target)  // 这个是自己的区域
        // if(!isSelf && !styleEl.classList.contains('hide')) {
-       //
        //     styleEl.classList.add('hide')
-       //
        // } else {
        //     console.log(21)
        // }
@@ -139,6 +156,10 @@
     }
     img {
         max-width: calc(100vw - 2rem);
+    }
+    .nav {
+        display: flex;
+        gap: 5px;
     }
 </style>
 </body>
