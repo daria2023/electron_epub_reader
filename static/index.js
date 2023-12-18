@@ -1,5 +1,7 @@
 const file_list  = document.getElementById('file-list');
 const note_list = document.getElementById('notes-list');
+const fileInput = document.getElementById('uploading');
+
 
 const fetchData = (cfg, empty, container,cb) => {
     fetch(cfg.url,{
@@ -57,3 +59,23 @@ fetchData({url:'/notes', method:'GET'}, 'No books yet, add some!', note_list, (d
             })
     })
 })
+
+
+fileInput.addEventListener('change', async e =>{
+    const file = e.target.files[0];
+    await handleFile(file)
+})
+
+const handleFile = async file => {
+    const formData = new FormData();
+    formData.append('file', file)
+    const res = await fetch('/',{
+        method:'post',
+        body: formData
+    });
+    const status = await res.status
+    if(status === 200){
+        window.location.reload();
+    }
+
+}

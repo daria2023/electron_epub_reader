@@ -4,9 +4,9 @@ const express = require("express");
 const multer = require("multer");
 const axios = require("axios");
 const ejs = require('ejs');
-const Parser = require("./parser");
+const Parser = require("./util/parser");
 const { isFolderExist, readFolder, replace_spaces, reduceFileType } = require("./util/folder")
-const { handleBook, ejsRender, handleBookContent } = require("./util/bookHandler")
+const { handleBook, ejsRender, handleBookContent, handleBookImgs} = require("./util/bookHandler")
 require('dotenv').config()
 
 
@@ -14,13 +14,24 @@ require('dotenv').config()
 const app = express();
 app.set('view engine', 'ejs');
 app.use(express.static('static'));
+const upload = multer({ dest: 'books/' ,fileFilter(req, file, callback) {
+        file.originalname = Buffer.from(file.originalname, "latin1").toString(
+            "utf8"
+        );
+        callback(null, true);
+    },
+    filename: function (req, file, callback) {
+        callback(null, file.originalname);
+    }});
+
 
 
 const staticHolder = path.join(__dirname,'static');
 const booksHolder = path.join(__dirname,'books');
 const notesHolder = path.join(__dirname,'notes');
 const ejsModelHolder = path.join(staticHolder,'models');
-const ejsGeneratedHolder = path.join(staticHolder,'generated')
+const ejsGeneratedHolder = path.join(staticHolder,'generated');
+const imgsHolder = path.join(staticHolder,'imgs');
 
 
 // 首页面获取
@@ -28,18 +39,44 @@ app.get('/', (req, res) => {
     const indexPage = path.join(staticHolder,'index.html');
     res.sendfile(indexPage)
 })
+// 首页上传文档：
+app.post("/", upload.single('file'), (req,res) =>{
+    const file = req.file;
+    const oldPath = file.path;
+    const restructuredName = replace_spaces(file.originalname);
+
+    const newPath = `books/${restructuredName}`;
+
+    fs.rename(oldPath, newPath, async (err) => {
+        if (err) {
+            res.status(500).send('Failed to save the file!');
+        }
+        res.status(200).send('ok');
+        // else {
+        //     const response = await axios.get(`http://localhost:9999/books/${restructuredName}`);
+        //     const data = await response.data;
+        //     if(data === 'done') {
+        //         res.status(200).send('ok');
+        //     }
+        // }
+    });
+
+})
 
 // 信息页获取
 app.get('/info/:bookName', async (req, res) => {
-    const bookPath = path.join(booksHolder,req.params.bookName)
+    const decodeName = decodeURIComponent(req.params.bookName)
+    const bookPath = path.join(booksHolder,decodeName)
     const info_ejs_path = path.join(ejsModelHolder,'info.ejs');
     const info_generated_path = path.join(ejsGeneratedHolder,'info.html');
 
+    const bookName = reduceFileType(decodeName);
     const book = new Parser(bookPath);
+    const bookImgHolder = path.join(imgsHolder,bookName)
     const bookInfo  = await handleBook(book);
-    if(bookInfo.code === 200) {
-        //
-        bookInfo.data.localName = reduceFileType(req.params.bookName);
+    const imgs = await handleBookImgs(book,bookImgHolder);
+    if(bookInfo.code === 200 && imgs.code === 200) {
+        bookInfo.data.localName = bookName;
         const ejsGenerated = await ejsRender(ejs,info_ejs_path,info_generated_path,bookInfo.data)
         if(ejsGenerated === 200){
             res.sendFile(info_generated_path);
@@ -53,20 +90,23 @@ app.get('/info/:bookName', async (req, res) => {
 
 // 阅读页获取
 
-app.get('/ing/:bookName/:chapter/:menuIdx', async (req, res) => {
-    const bookPath = path.join(booksHolder,`${req.params.bookName}.epub`);
-    const chapter = req.params.chapter;
+app.get('/ing/*', async (req, res) => {
+    const paths = req.params[0].split('/');
+    const requestedBook = paths[0];
+    const requestedChapter =  paths.slice(1).join('/');
+
+    const bookPath = path.join(booksHolder,`${requestedBook}.epub`);
+    const chapter = requestedChapter;
     const chapter_ejs_path =  path.join(ejsModelHolder,'chapter.ejs');
     const chapter_generated_path = path.join(ejsGeneratedHolder,'chapter.html');
 
     const book = new Parser(bookPath);
-    const bookChapter  = await handleBookContent(book, chapter);
+    const bookChapter  = await handleBookContent(book, chapter, requestedBook);
 
     if(bookChapter.code === 200) {
         const data = {
             content: bookChapter.content,
-            title: req.params.bookName,
-            idx: req.params.menuIdx
+            title: requestedBook,
         }
         const ejsGenerated = await ejsRender(ejs,chapter_ejs_path,chapter_generated_path,data)
         if(ejsGenerated === 200){
@@ -79,6 +119,12 @@ app.get('/ing/:bookName/:chapter/:menuIdx', async (req, res) => {
 
 })
 
+// image 获取
+app.get('/image/:bookName/:imgId', async(req, res)=>{
+    const bookImgsFolder = path.join(imgsHolder, req.params.bookName);
+    const theImgPath = path.join(bookImgsFolder, req.params.imgId);
+    res.sendFile(theImgPath);
+})
 // 进入首页接口管理
 app.get('/books', async (req, res) => {
     const files = await  readFolder(booksHolder);
@@ -113,7 +159,7 @@ app.get('/notes', async (req, res) => {
 // 获取书本信息
 
 app.get('/read/:name', async (req, res) => {
-    let filename = replace_spaces(req.params.name);
+    let filename = decodeURIComponent(req.params.name);
     const filePath = path.join(__dirname, 'books', filename);
     const fileExist = await isFolderExist(filePath);
     if(fileExist === 200){

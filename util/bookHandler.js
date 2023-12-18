@@ -1,7 +1,8 @@
 const path = require("path");
 const fs = require("fs");
+const {isFolderExist} = require("./folder");
 
-const handleBook = (book) => {
+const handleBook = (book, bookImg) => {
     book.init();
     return new Promise((resolve, reject) => {
         try {
@@ -9,14 +10,13 @@ const handleBook = (book) => {
                 book.getMenu().then(menu => {
                     if(menu.length === 0){
                         book.getSpine().then(spine =>{
-                            // console.log(spine)
                             info.menu = spine.map(s  => {
                                 return {
                                     src: s.href,
                                     text: s.id
                                 }
                             })
-                            // console.log(info.menu)
+
                             resolve({
                                 code: 200,
                                 data: info
@@ -29,20 +29,39 @@ const handleBook = (book) => {
                             data: info
                         })
                     }
-
-
-                })
+                });
 
             })
         } catch (e) {
-            reject(e)
+            console.log(123,e)
+            // reject(e)
         }
 
     })
 
 }
 
-const handleBookContent = (book, chapter) => {
+const handleBookImgs = (book,bookImg) => {
+    book.init();
+
+    return new Promise((resolve, reject) => {
+        try {
+            isFolderExist(bookImg).then(() => {
+                book.getImgs(bookImg).then(is => {
+                    resolve(is)
+                })
+            })
+        } catch (e) {
+           resolve({
+               code: 400,
+               msg:'parse imgs failed'
+           })
+        }
+
+    })
+}
+
+const handleBookContent = (book, chapter, bookName) => {
     book.init();
     return new Promise(async (resolve, reject) => {
         try {
@@ -77,4 +96,6 @@ const ejsRender = (ejs, modelPath, generatedPath, passedData) => {
     })
 }
 
-module.exports = {handleBook, ejsRender, handleBookContent}
+
+
+module.exports = {handleBook, ejsRender, handleBookContent, handleBookImgs}

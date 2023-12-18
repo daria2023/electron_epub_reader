@@ -1,8 +1,4 @@
 node_modules
 books
-images
 notes
-htmls
-project/views/chapter.html
-project/views/note.html
-project/views/cover.html
+static/imgs
