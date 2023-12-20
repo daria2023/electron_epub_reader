@@ -125,7 +125,6 @@ const saveLocalFile = (path, bookName, passedData) => {
         const jsonFile = JSON.parse(data);
         jsonFile["books"][bookName] = passedData;
         const newString = JSON.stringify(jsonFile);
-        console.log(newString);
         fs.writeFile(
           path,
           Buffer.from(newString),
