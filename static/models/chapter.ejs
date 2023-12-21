@@ -55,6 +55,11 @@
 
 <script>
    // theme controller;
+   const isEnglish = localStorage.getItem('english') === '1';
+   if(isEnglish) {
+       document.body.style.fontFamily = 'Roboto sans-serif';
+       document.body.style.fontSize = '1.15rem';
+   }
    const isLight = localStorage.getItem('style') === 'light';
    const themeBtn = document.getElementById('theme-set-btn');
    window.scrollTo(0,0);

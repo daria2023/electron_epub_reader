@@ -16,7 +16,7 @@ body {
     max-width: 100vw;
 }
 body.light {
-    background-color: #ccc;
+    background-color: #f2f2f2;
     color: #333;
 }
 body::-webkit-scrollbar {
@@ -42,12 +42,13 @@ ul {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap:3px;
+    gap:5px;
 }
 a {
     cursor: pointer;
     text-decoration: none;
     color: var(--dark-theme-clr);
+    word-break: break-word;
 }
 
 li a:hover {
@@ -68,7 +69,7 @@ li a:hover {
     margin-bottom: 1rem;
     text-indent: 1.5rem;
     letter-spacing: 1px;
-    font-size: 1.5rem;
+    font-size: 1.15rem;
 }
 
 input, textarea, select, option,button {
@@ -121,6 +122,16 @@ pre {
     line-height: 1.5;
     white-space: pre-wrap;
     word-wrap: break-word;
+    border: 1px solid #333;
+    border-radius: 3px;
+    padding: 1rem;
+    background-color: var(--dark-theme-bg);
+    color: #f2f2f2;
+    font-family: sans-serif;
+    letter-spacing: 1px;
+}
+pre code {
+    font-family: Menlo,Monaco,Consolas,Courier New,monospace;
 }
 
 #menu-list {
