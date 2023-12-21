@@ -122,14 +122,13 @@ const saveLocalFile = (path, bookName, passedData) => {
   return new Promise((resolve, reject) => {
     try {
       fs.readFile(path, { encoding: "utf-8" }, (err, data) => {
-        const jsonFile = JSON.parse(data);
-        jsonFile["books"][bookName] = passedData;
-        const newString = JSON.stringify(jsonFile);
+        const saved = JSON.parse(data);
+        saved["books"][bookName] = passedData;
         fs.writeFile(
           path,
-          Buffer.from(newString),
+          JSON.stringify(saved),
           { encoding: "utf-8" },
-          () => {
+          (err) => {
             resolve({
               code: 200,
             });

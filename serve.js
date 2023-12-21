@@ -113,7 +113,8 @@ app.get("/info/:bookName", async (req, res) => {
 app.get("/ing/*", async (req, res) => {
   const paths = req.params[0].split("/");
   const requestedBook = paths[0];
-  const requestedChapter = paths.slice(1).join("/");
+  const requestedMenuIdx = paths[1];
+  const requestedChapter = paths.slice(2).join("/");
 
   const bookPath = path.join(booksHolder, `${requestedBook}.epub`);
   const chapter = requestedChapter;
@@ -121,7 +122,7 @@ app.get("/ing/*", async (req, res) => {
   const chapter_generated_path = path.join(ejsGeneratedHolder, "chapter.html");
   const hasLoaded = await checkLocalFile(bookHolderJson, requestedBook);
   const loadedInfo = await hasLoaded.data["menu"];
-  const findMenu = findInMenu(loadedInfo, chapter);
+  const findMenu = findInMenu(loadedInfo, chapter, requestedMenuIdx);
 
   const book = new Parser(bookPath);
   const bookChapter = await handleBookContent(book, chapter, requestedBook);
@@ -132,6 +133,7 @@ app.get("/ing/*", async (req, res) => {
       title: requestedBook,
       prev: findMenu.prev,
       next: findMenu.next,
+      index: requestedMenuIdx,
     };
     const ejsGenerated = await ejsRender(
       ejs,
@@ -146,25 +148,24 @@ app.get("/ing/*", async (req, res) => {
     res.send({ code: 400, msg: "No Chapter found!" });
   }
 
-  function findInMenu(menu, req) {
+  function findInMenu(menu, req, idx) {
     const len = menu.length;
-
-    const findout = menu.find((item) => item.src.includes(req));
-    const idx = menu.indexOf(findout);
-    const prev = prevChapter(idx);
-    const next = nextChapter(idx);
+    const max = len - 1;
+    const min = 0;
+    const prev = prevChapter(+idx);
+    const next = nextChapter(+idx);
 
     return {
       prev,
       next,
     };
     function prevChapter(idx) {
-      const lastIdx = idx - 1 <= 0 ? 0 : idx - 1;
-      return menu[lastIdx];
+      const lastIdx = idx - 1 <= min ? min : idx - 1;
+      return { ...menu[lastIdx], index: lastIdx };
     }
     function nextChapter(idx) {
-      const nextIdx = idx + 1 >= len - 1 ? len - 1 : idx + 1;
-      return menu[nextIdx];
+      const nextIdx = idx + 1 >= max ? max : idx + 1;
+      return { ...menu[nextIdx], index: nextIdx };
     }
   }
 });

@@ -30,7 +30,7 @@
     <ul>
         <% menu.forEach(function(m,idx) { %>
             <li>
-                <a href=<%= '/ing/' + localName + '/' +m.src %> >
+                <a href=<%= '/ing/' + localName + '/' + idx + '/' + m.src  %> >
                    <span><%= idx + 1%></span> <%= m.text %>
                 </a>
         <% }); %>
