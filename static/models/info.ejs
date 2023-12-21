@@ -23,6 +23,10 @@
             <td>Publisher</td>
             <td><%= publisher %></td>
         </tr>
+        <tr>
+            <td>Language</td>
+            <td id="language"><%= language %></td>
+        </tr>
         </tbody>
     </table>
 </header>
@@ -36,6 +40,14 @@
         <% }); %>
     </ul>
 </main>
+<script>
+    const isEnglish = document.getElementById('language');
+    if(isEnglish.innerHTML === 'en-US'){
+        localStorage.setItem('english', '1');
+    } else {
+        localStorage.setItem('english', '0')
+    }
+</script>
 </body>
 </html>
 

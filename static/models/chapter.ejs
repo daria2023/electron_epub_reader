@@ -57,6 +57,7 @@
    // theme controller;
    const isLight = localStorage.getItem('style') === 'light';
    const themeBtn = document.getElementById('theme-set-btn');
+   window.scrollTo(0,0);
 
    themeBtn.addEventListener('click',()=>{
        document.body.classList.toggle('light');
