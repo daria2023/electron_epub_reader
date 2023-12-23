@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const multer = require("multer");
-const axios = require("axios");
 const ejs = require("ejs");
 const Parser = require("./util/parser");
 const {
@@ -15,20 +14,34 @@ const {
   handleBook,
   ejsRender,
   handleBookContent,
-  handleBookImgs,
+  handleAllImgs,
   checkLocalFile,
   saveLocalFile,
 } = require("./util/bookHandler");
-require("dotenv").config();
 
 const app = express();
 app.set("view engine", "ejs");
 app.use(express.static("static"));
+
+const outAppAsar = path.join(__dirname,'..');
+const staticHolder = path.join(__dirname, "static");
+const booksHolder = path.join(__dirname, "books");
+// const booksHolder = path.join(outAppAsar, "books");
+const notesHolder = path.join(__dirname, "notes");
+const ejsModelHolder = path.join(staticHolder, "models");
+const ejsGeneratedHolder = path.join(staticHolder, "generated");
+const imgsHolder = path.join(staticHolder, "imgs");
+const bookHolderJson = path.join(staticHolder, "holder.json");
+const imgHolderJson = path.join(staticHolder, "imgs.json");
+
+const booksAndParser = new Map();
+const bookImgsMap = new Map();
+
 const upload = multer({
-  dest: "books/",
+  dest: booksHolder,
   fileFilter(req, file, callback) {
     file.originalname = Buffer.from(file.originalname, "latin1").toString(
-      "utf8",
+        "utf8",
     );
     callback(null, true);
   },
@@ -37,27 +50,27 @@ const upload = multer({
   },
 });
 
-const staticHolder = path.join(__dirname, "static");
-const booksHolder = path.join(__dirname, "books");
-const notesHolder = path.join(__dirname, "notes");
-const ejsModelHolder = path.join(staticHolder, "models");
-const ejsGeneratedHolder = path.join(staticHolder, "generated");
-const imgsHolder = path.join(staticHolder, "imgs");
-const bookHolderJson = path.join(staticHolder, "holder.json");
-
-// 首页面获取
+app.all('*', function (req, res, next) {
+  const requestedFile = req.url.split('/');
+  const len = requestedFile.length;
+  const lastPath = requestedFile[len - 1];
+  if(lastPath.endsWith('.css')|| lastPath.endsWith('.js')){
+    res.sendFile(path.join(staticHolder,lastPath));
+  } else {
+    next()
+  }
+})
 app.get("/", (req, res) => {
   const indexPage = path.join(staticHolder, "index.html");
-  res.sendfile(indexPage);
+  // E:\projects\self-project\electron_epub_reader\out\win-unpacked\resources\app.asar E:\projects\self-project\electron_epub_reader\out\win-unpacked\resources\app.asar\static\index.html
+  res.sendFile(indexPage);
 });
 // 首页上传文档：
 app.post("/", upload.single("file"), (req, res) => {
   const file = req.file;
   const oldPath = file.path;
   const restructuredName = replace_spaces(file.originalname);
-
-  const newPath = `books/${restructuredName}`;
-
+  const newPath = path.join(booksHolder,restructuredName)
   fs.rename(oldPath, newPath, async (err) => {
     if (err) {
       res.status(500).send("Failed to save the file!");
@@ -76,17 +89,20 @@ app.get("/info/:bookName", async (req, res) => {
   const bookName = reduceFileType(decodeName);
   const bookImgHolder = path.join(imgsHolder, bookName);
 
-  const hasLoaded = await checkLocalFile(bookHolderJson, bookName);
+  const hasLoaded = await checkLocalFile(bookHolderJson, 'books',bookName);
   if (hasLoaded.code === 200) {
     const bookInfo = hasLoaded.data;
     await renderFile(bookInfo);
   } else {
-    const book = new Parser(bookPath);
+    const book = checkBookMap(bookName,bookPath);
+    const imgOk = await handleAllImgs(book, bookImgHolder);
     const bookInfo = await handleBook(book);
-    const imgs = await handleBookImgs(book, bookImgHolder);
-    if (bookInfo.code === 200 && imgs.code === 200) {
+    // if(imgOk.code === 200) {
+    //   await saveLocalFile(imgHolderJson, 'imgs', bookName, imgOk.data);
+    // }
+    if (bookInfo.code === 200) {
       bookInfo.data.localName = bookName;
-      await saveLocalFile(bookHolderJson, bookName, bookInfo.data);
+      await saveLocalFile(bookHolderJson, 'books',bookName, bookInfo.data);
       await renderFile(bookInfo.data);
     } else {
       res.send({ code: 400, msg: "No info found!" });
@@ -120,11 +136,12 @@ app.get("/ing/*", async (req, res) => {
   const chapter = requestedChapter;
   const chapter_ejs_path = path.join(ejsModelHolder, "chapter.ejs");
   const chapter_generated_path = path.join(ejsGeneratedHolder, "chapter.html");
-  const hasLoaded = await checkLocalFile(bookHolderJson, requestedBook);
+  const hasLoaded = await checkLocalFile(bookHolderJson, 'books',requestedBook);
   const loadedInfo = await hasLoaded.data["menu"];
   const findMenu = findInMenu(loadedInfo, chapter, requestedMenuIdx);
 
-  const book = new Parser(bookPath);
+  // const book = new Parser(bookPath);
+  const book = checkBookMap(requestedBook, bookPath);
   const bookChapter = await handleBookContent(book, chapter, requestedBook);
 
   if (bookChapter.code === 200) {
@@ -172,17 +189,19 @@ app.get("/ing/*", async (req, res) => {
 
 // image 获取
 app.get("/image/:bookName/:imgId", async (req, res) => {
-  const bookImgsFolder = path.join(imgsHolder, req.params.bookName);
-  const theImgPath = path.join(bookImgsFolder, req.params.imgId);
+  const requestBookName = req.params.bookName;
+  const requestId = req.params.imgId;
+  const bookImgsFolder = path.join(imgsHolder, requestBookName);
+  const theImgPath = path.join(bookImgsFolder, requestId);
   res.sendFile(theImgPath);
 });
 // 进入首页接口管理
 app.get("/books", async (req, res) => {
-  const files = await readFolder(booksHolder);
-  if (files && files.length > 0) {
+  const r = await readFolder(booksHolder);
+  if (r.code === 200 && r.files && r.files.length > 0) {
     res.send({
       code: 200,
-      data: files,
+      data: r.files,
     });
   } else {
     res.send({
@@ -223,6 +242,18 @@ app.get("/read/:name", async (req, res) => {
   }
 });
 
+function checkBookMap(bookName, path) {
+  if(booksAndParser.get(bookName)){
+    return booksAndParser.get(bookName);
+  } else {
+    const book = new Parser(path);
+    booksAndParser.set(bookName,book);
+    return book;
+  }
+}
+
+
+
 const serve = (port) => {
   const server = app.listen(port, () => {
     console.log(`Server has been running on ${port}`);
@@ -234,6 +265,5 @@ const serve = (port) => {
     }
   });
 };
-// serve(process.env.PORT);
 
 module.exports = serve;

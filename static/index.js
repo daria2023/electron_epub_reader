@@ -37,36 +37,13 @@ fetchData(
         const data = await res.json();
         if (data.code === 200) {
           window.location.replace(
-            "http://localhost:9877/info/" + encodedFilename,
+            `http://localhost:9877/info/` + encodedFilename,
           );
         }
       });
     });
   },
 );
-
-// fetchData({url:'/notes', method:'GET'}, 'No books yet, add some!', note_list, (data)=>{
-//     data.map(li => {
-//         const l = document.createElement('li');
-//         const a = document.createElement('a');
-//         a.innerHTML = li;
-//         l.append(a);
-//         note_list.appendChild(l);
-//         l.addEventListener('click', async () => {
-//             const encodedFilename = encodeURIComponent(li);
-//             console.log('1121')
-//
-//             const res = await fetch('/read/'+ encodedFilename);
-//             console.log('1121')
-//             const data = await res.json();
-//             console.log(data, await res)
-//                 if(data.code === 200) {
-//                     console.log('okk')
-//                     window.location.replace(`http://localhost:9877/info/${li}`);
-//                 }
-//             })
-//     })
-// })
 
 fileInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "nodemon serve.js",
     "start": "electron .",
-    "serve": "npm run test && npm run start"
+    "serve": "npm run test && npm run start",
+    "build": "electron-builder build"
   },
   "keywords": [
     "epub",
@@ -16,17 +17,32 @@
   "license": "ISC",
   "devDependencies": {
     "electron": "^27.1.2",
+    "electron-builder": "^24.9.1",
     "nodemon": "^3.0.1"
   },
   "dependencies": {
     "adm-zip": "^0.5.10",
-    "axios": "^1.6.2",
-    "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
-    "epub": "^1.2.1",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
-    "prettier": "^3.1.1",
     "xml2js": "^0.6.2"
+  },
+  "build": {
+    "appId": "com.lane.reader.app",
+    "productName": "LaneReader",
+    "copyright": "Copyright © 2023 daria",
+    "directories": {
+      "output": "out"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "out/favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "language": "2052",
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
   }
 }

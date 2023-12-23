@@ -194,30 +194,6 @@ module.exports = class Parser {
             })
         }
 
-    getChapters () {
-         return new Promise((resolve, reject)=>{
-             try {
-                 this.getManifest().then(cnt => {
-                     const chaps = cnt['chapters'];
-                     const len = chaps.length;
-                     const holder = [];
-                      chaps.map( (ch,idx) => {
-                          this._findEntryAndRead(ch.href,   (data) => {
-                             const str  = data.toString('utf-8');
-                             const formatted = this._restructureString(str);
-                             holder.push(formatted);
-                             idx === len - 1 ? resolve(holder) : null;
-                         }, false, err=>{
-                              console.log('解析出错', err)
-                          })
-
-                     })
-                 })
-             } catch (e) {
-                 reject(e);
-             }
-         })
-    }
     getChapter(href) {
          return new Promise((resolve, reject)=>{
              try {
@@ -271,13 +247,33 @@ module.exports = class Parser {
         })
     }
 
+    getImgEntites () {
+        return new Promise((resolve, reject)=>{
+            try {
+                this.getManifest().then(cnt => {
+                    const imgs = cnt['images'];
+                    resolve({
+                        code: 200,
+                        data: imgs
+                    });
+                })
+            } catch (e) {
+                resolve({
+                    code: 400,
+                    data: []
+                });
+            }
+        })
+    }
+
 
 
 }
-
+//
 // const ppp = new Parser('./books/aa.epub');
-
-// ppp.getSpine().then(m => {
+// //
+// ppp.init()
+// ppp.getImgEntites().then(m => {
 //     console.log(m);
 // })
 

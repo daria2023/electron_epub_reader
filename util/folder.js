@@ -2,16 +2,37 @@ const fs = require("fs");
 
 const readFolder = (folder) => {
     return new Promise((resolve, reject) => {
-        fs.readdir(folder, { }, (err, files) => {
-            if(err) {
-                reject({
-                    code: 400,
-                    msg: err,
-                })
-            } else {
-                resolve(files)
-            }
-        })
+        try{
+            fs.readdir(folder, { }, (err, files) => {
+                if(err) {
+                    resolve({
+                        code: 400,
+                        msg: err,
+                    })
+                } else {
+                    resolve({
+                        code: 200,
+                        files
+                    })
+                }
+            })
+        } catch (e) {
+            console.log('read folder err', e);
+            resolve({
+                code: 400,
+                msg: e,
+            })
+        }
+        // fs.readdir(folder, { }, (err, files) => {
+        //     if(err) {
+        //         reject({
+        //             code: 400,
+        //             msg: err,
+        //         })
+        //     } else {
+        //         resolve(files)
+        //     }
+        // })
     })
 
 }

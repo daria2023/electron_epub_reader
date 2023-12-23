@@ -57,6 +57,28 @@ const handleBookImgs = (book, bookImg) => {
   });
 };
 
+const handleAllImgs = (book,bookImg) =>{
+  book.init();
+
+  return new Promise((resolve, reject) => {
+    try {
+      isFolderExist(bookImg).then(() => {
+        book.getImgEntites(bookImg).then((is) => {
+          resolve(is);
+        });
+      });
+    } catch (e) {
+      resolve({
+        code: 400,
+        msg: "parse imgs failed",
+      });
+    }
+  });
+}
+const handleSingleImg = (book, img) =>{
+
+}
+
 const handleBookContent = (book, chapter, bookName) => {
   book.init();
   return new Promise(async (resolve, reject) => {
@@ -90,17 +112,17 @@ const ejsRender = (ejs, modelPath, generatedPath, passedData) => {
   });
 };
 
-const checkLocalFile = (path, bookName) => {
+const checkLocalFile = (path, param, bookName) => {
   return new Promise((resolve, reject) => {
     try {
       fs.readFile(path, { encoding: "utf-8" }, (err, data) => {
         const jsonFile = JSON.parse(data);
-        const isLoaded = jsonFile["books"][bookName];
+        const isLoaded = jsonFile[param][bookName];
         if (isLoaded) {
           resolve({
             code: 200,
             value: true,
-            data: jsonFile["books"][bookName],
+            data: jsonFile[param][bookName],
           });
         } else {
           resolve({
@@ -118,12 +140,12 @@ const checkLocalFile = (path, bookName) => {
   });
 };
 
-const saveLocalFile = (path, bookName, passedData) => {
+const saveLocalFile = (path, param,bookName, passedData) => {
   return new Promise((resolve, reject) => {
     try {
       fs.readFile(path, { encoding: "utf-8" }, (err, data) => {
         const saved = JSON.parse(data);
-        saved["books"][bookName] = passedData;
+        saved[param][bookName] = passedData;
         fs.writeFile(
           path,
           JSON.stringify(saved),
@@ -151,4 +173,5 @@ module.exports = {
   handleBookImgs,
   checkLocalFile,
   saveLocalFile,
+  handleAllImgs
 };
