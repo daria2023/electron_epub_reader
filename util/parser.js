@@ -128,13 +128,15 @@ module.exports = class Parser {
          return new Promise( (resolve, reject) => {
              try {
                  const bookInfo = {}
-                 this._findEntryAndRead('content.opf', (data)=>{
+                 this._findEntryAndRead('content.opf', async (data)=>{
 
+                     const that = this;
                      const info = (data['package']['metadata'][0]);
                      bookInfo['title'] = info['dc:title'] ? info['dc:title'][0]['_'] || info['dc:title'][0] : '';
                      bookInfo['creator'] = info['dc:creator'][0]['_'] || info['dc:creator'][0] || ''
                      bookInfo['publisher'] = info['dc:publisher'] ? info['dc:publisher'][0]['_']|| info['dc:publisher'][0] : ''
-                     bookInfo['language'] =info['dc:language'][0]['_']|| info['dc:language'][0] || ''
+                     bookInfo['language'] =info['dc:language'][0]['_']|| info['dc:language'][0] || '';
+                     bookInfo['request-path']= await that._contentPath;
                      resolve(bookInfo);
                  },true,(err)=>{
                      console.log('Get info wrong', err)
