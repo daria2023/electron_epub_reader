@@ -18,4 +18,5 @@ const createWindow = async () => {
 app.whenReady().then(async () => {
   await run(PORT);
   await createWindow();
+  // app.isPackaged
 });

@@ -50,15 +50,17 @@ fileInput.addEventListener("change", async (e) => {
   await handleFile(file);
 });
 
+const loader = document.querySelector('.loader');
 const handleFile = async (file) => {
+  loader.classList.add('show');
   const formData = new FormData();
   formData.append("file", file);
   const res = await fetch("/", {
     method: "post",
     body: formData,
   });
-  const status = await res.status;
-  if (status === 200) {
+  const data = await res.json();
+  if (data.code === 200) {
     window.location.reload();
   }
 };

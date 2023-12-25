@@ -14,28 +14,28 @@ const {
   handleBook,
   ejsRender,
   handleBookContent,
-  handleAllImgs,
+  handleBookImgs,
   checkLocalFile,
   saveLocalFile,
 } = require("./util/bookHandler");
+const { PORT } = require("./cfg");
+
 
 const app = express();
 app.set("view engine", "ejs");
 app.use(express.static("static"));
 
-const outAppAsar = path.join(__dirname,'..');
+// const outAppAsar = path.join(__dirname,'..');
+const outAppAsar = __dirname;
 const staticHolder = path.join(__dirname, "static");
-const booksHolder = path.join(__dirname, "books");
-// const booksHolder = path.join(outAppAsar, "books");
+const booksHolder = path.join(outAppAsar, "books");
 const notesHolder = path.join(__dirname, "notes");
 const ejsModelHolder = path.join(staticHolder, "models");
 const ejsGeneratedHolder = path.join(staticHolder, "generated");
-const imgsHolder = path.join(staticHolder, "imgs");
-const bookHolderJson = path.join(staticHolder, "holder.json");
-const imgHolderJson = path.join(staticHolder, "imgs.json");
+const imgsHolder = path.join(outAppAsar, "imgs");
+const bookHolderJson = path.join(outAppAsar, "holder.json");
 
 const booksAndParser = new Map();
-const bookImgsMap = new Map();
 
 const upload = multer({
   dest: booksHolder,
@@ -62,7 +62,6 @@ app.all('*', function (req, res, next) {
 })
 app.get("/", (req, res) => {
   const indexPage = path.join(staticHolder, "index.html");
-  // E:\projects\self-project\electron_epub_reader\out\win-unpacked\resources\app.asar E:\projects\self-project\electron_epub_reader\out\win-unpacked\resources\app.asar\static\index.html
   res.sendFile(indexPage);
 });
 // 首页上传文档：
@@ -74,20 +73,58 @@ app.post("/", upload.single("file"), (req, res) => {
   fs.rename(oldPath, newPath, async (err) => {
     if (err) {
       res.status(500).send("Failed to save the file!");
+    } else {
+      // 加载全书图片，首页加载loading效果
+      const bookName = newPath.split('\\');
+      const book = bookName.at(-1);
+      fetch(`http://localhost:${PORT}/preload/${book}`).then(async (loadres)=>{
+        const data = await loadres.json();
+        if(data.code === 200) {
+          res.send({
+            code: 200
+          })
+        } else {
+          res.send({
+            code: 204,
+            msg: "Imgs load failed"
+          })
+        }
+      }).catch(err=>{
+        console.log('parse img wrong, ', err);
+        res.send({
+          code: 204,
+          msg: "Imgs load failed"
+        })
+      })
     }
-    res.status(200).send("ok");
   });
 });
+// 加载本书图片
+app.get('/preload/:bookName', async (req, res) => {
+  const decodeName = decodeURIComponent(req.params.bookName);
+  const bookPath = path.join(booksHolder, decodeName);
+  const bookName = reduceFileType(decodeName);
+  const bookImgHolder = path.join(imgsHolder, bookName);
+  const book = new Parser(bookPath);
+  const imgSaved = await handleBookImgs(book, bookImgHolder);
+  if(imgSaved.code === 200) {
+    res.send({
+      code:200
+    })
+  } else {
+    res.send({code: 400})
+  }
 
+})
 // 信息页获取
 app.get("/info/:bookName", async (req, res) => {
+
   const decodeName = decodeURIComponent(req.params.bookName);
   const bookPath = path.join(booksHolder, decodeName);
   const info_ejs_path = path.join(ejsModelHolder, "info.ejs");
   const info_generated_path = path.join(ejsGeneratedHolder, "info.html");
 
   const bookName = reduceFileType(decodeName);
-  const bookImgHolder = path.join(imgsHolder, bookName);
 
   const hasLoaded = await checkLocalFile(bookHolderJson, 'books',bookName);
   if (hasLoaded.code === 200) {
@@ -95,11 +132,7 @@ app.get("/info/:bookName", async (req, res) => {
     await renderFile(bookInfo);
   } else {
     const book = checkBookMap(bookName,bookPath);
-    const imgOk = await handleAllImgs(book, bookImgHolder);
     const bookInfo = await handleBook(book);
-    // if(imgOk.code === 200) {
-    //   await saveLocalFile(imgHolderJson, 'imgs', bookName, imgOk.data);
-    // }
     if (bookInfo.code === 200) {
       bookInfo.data.localName = bookName;
       await saveLocalFile(bookHolderJson, 'books',bookName, bookInfo.data);
@@ -140,7 +173,6 @@ app.get("/ing/*", async (req, res) => {
   const loadedInfo = await hasLoaded.data["menu"];
   const findMenu = findInMenu(loadedInfo, chapter, requestedMenuIdx);
 
-  // const book = new Parser(bookPath);
   const book = checkBookMap(requestedBook, bookPath);
   const bookChapter = await handleBookContent(book, chapter, requestedBook);
 
@@ -230,7 +262,7 @@ app.get("/notes", async (req, res) => {
 
 app.get("/read/:name", async (req, res) => {
   let filename = decodeURIComponent(req.params.name);
-  const filePath = path.join(__dirname, "books", filename);
+  const filePath = path.join(booksHolder, filename);
   const fileExist = await isFolderExist(filePath);
   if (fileExist === 200) {
     res.send({ code: 200 });
@@ -251,7 +283,6 @@ function checkBookMap(bookName, path) {
     return book;
   }
 }
-
 
 
 const serve = (port) => {

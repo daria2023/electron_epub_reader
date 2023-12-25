@@ -34,9 +34,12 @@
     "directories": {
       "output": "out"
     },
+    "extraResources": [
+      "holder.json"
+    ],
     "win": {
       "target": "nsis",
-      "icon": "out/favicon.ico"
+      "icon": "favicon.ico"
     },
     "nsis": {
       "oneClick": false,

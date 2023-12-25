@@ -1,8 +1,8 @@
 node_modules
 books
 notes
-static/imgs
 .idea
 .vscode
 out
 zip
+imgs

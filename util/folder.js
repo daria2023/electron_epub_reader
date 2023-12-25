@@ -48,6 +48,8 @@ const isFolderExist = (path) => {
                         code: 400,
                         msg: err,
                     })
+                } else {
+                    resolve(200)
                 }
             })
         })

@@ -45,7 +45,9 @@ const handleBookImgs = (book, bookImg) => {
     try {
       isFolderExist(bookImg).then(() => {
         book.getImgs(bookImg).then((is) => {
-          resolve(is);
+          resolve({
+            code: 200
+          });
         });
       });
     } catch (e) {
@@ -75,15 +77,13 @@ const handleAllImgs = (book,bookImg) =>{
     }
   });
 }
-const handleSingleImg = (book, img) =>{
-
-}
 
 const handleBookContent = (book, chapter, bookName) => {
   book.init();
   return new Promise(async (resolve, reject) => {
     try {
       const received = await book.getChapter(chapter);
+      const changeImageSrc = handleImageTags(received, bookName);
       resolve({
         code: 200,
         content: received,
@@ -96,13 +96,34 @@ const handleBookContent = (book, chapter, bookName) => {
     }
   });
 };
+const handleImageTags = (txt,bookName) => {
+  const extractImgElements = (text) => {
+    const imgRegex = /<img\s[^>]*src\s*=\s*['"]([^'"]+)['"][^>]*>/gi;
+    const imgElements = [];
+    let match;
+    while ((match = imgRegex.exec(text)) !== null) {
+      imgElements.push(match[1]);
+    }
+    return imgElements;
+  };
+  const imgs = extractImgElements(txt);
 
+  // imgs.forEach(img => {
+  //   const originSrc = img.getAttribute('src');
+  //   const origins = originSrc.split('/');
+  //   const len = origins.length;
+  //   const idSrc = origins[len - 1];
+  //   img.setAttribute('src',`/image/${bookName}/${idSrc}`);
+  // });
+
+
+}
 const ejsRender = (ejs, modelPath, generatedPath, passedData) => {
   return new Promise((resolve, reject) => {
     try {
-      fs.readFile(modelPath, "utf-8", (err, ejsModelString) => {
-        const html = ejs.render(ejsModelString, passedData);
-        fs.writeFile(generatedPath, html, "utf-8", () => {
+      fs.readFile(modelPath, "utf-8", async (err, ejsModelString) => {
+        const html = await ejs.render(ejsModelString, passedData);
+        await fs.writeFile(generatedPath, html, "utf-8", () => {
           resolve(200);
         });
       });
@@ -140,7 +161,7 @@ const checkLocalFile = (path, param, bookName) => {
   });
 };
 
-const saveLocalFile = (path, param,bookName, passedData) => {
+const saveLocalFile = (path, param, bookName, passedData) => {
   return new Promise((resolve, reject) => {
     try {
       fs.readFile(path, { encoding: "utf-8" }, (err, data) => {
