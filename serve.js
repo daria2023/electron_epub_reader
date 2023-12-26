@@ -25,8 +25,8 @@ const app = express();
 app.set("view engine", "ejs");
 app.use(express.static("static"));
 
-// const outAppAsar = path.join(__dirname,'..');
-const outAppAsar = __dirname;
+const outAppAsar = path.join(__dirname,'..');
+// const outAppAsar = __dirname;
 const staticHolder = path.join(__dirname, "static");
 const booksHolder = path.join(outAppAsar, "books");
 const notesHolder = path.join(__dirname, "notes");
@@ -54,7 +54,7 @@ app.all('*', function (req, res, next) {
   const requestedFile = req.url.split('/');
   const len = requestedFile.length;
   const lastPath = requestedFile[len - 1];
-  if(lastPath.endsWith('.css')|| lastPath.endsWith('.js')){
+  if(lastPath.endsWith('.css')|| lastPath.endsWith('.js') || lastPath.endsWith('.ico') ){
     res.sendFile(path.join(staticHolder,lastPath));
   } else {
     next()
