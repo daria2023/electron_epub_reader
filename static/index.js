@@ -37,7 +37,7 @@ fetchData(
         const data = await res.json();
         if (data.code === 200) {
           window.location.replace(
-            `http://localhost:9877/info/` + encodedFilename,
+            `/info/` + encodedFilename,
           );
         }
       });
