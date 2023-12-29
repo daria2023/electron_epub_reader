@@ -45,6 +45,31 @@ fetchData(
   },
 );
 
+fetchData(
+    { url: "/notes", method: "GET" },
+    "No notes yet, add some!",
+    note_list,
+    (data) => {
+      data.map((li) => {
+        const l = document.createElement("li");
+        const a = document.createElement("a");
+        a.innerHTML =  `‣ ${li}`;
+        l.append(a);
+        note_list.appendChild(l);
+        l.addEventListener("click", async () => {
+          // const encodedFilename = encodeURIComponent(li);
+          // const res = await fetch("/read/" + encodedFilename);
+          // const data = await res.json();
+          // if (data.code === 200) {
+          //   window.location.replace(
+          //       `/info/` + encodedFilename,
+          //   );
+          // }
+        });
+      });
+    },
+);
+
 fileInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   await handleFile(file);

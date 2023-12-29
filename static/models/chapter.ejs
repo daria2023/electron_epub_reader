@@ -55,6 +55,7 @@
 
 <% if (title) { %>
     <script>
+        localStorage.setItem('title', "<%= title %>");
         const prevLink = "<%= '/ing/' + title + '/' +  prev.index + '/' + prev.src %>" ;
         const nextLink = "<%= '/ing/' + title + '/' + next.index + '/' + next.src %>";
         window.addEventListener('keydown',(e)=>{
@@ -68,75 +69,113 @@
 <% } %>
 
 <script>
-   // theme controller;
-   const isEnglish = localStorage.getItem('english') === '1';
-   if(isEnglish) {
-       document.body.style.fontFamily = 'Roboto sans-serif';
-       document.body.style.fontSize = '1.15rem';
-   }
-   const isLight = localStorage.getItem('style') === 'light';
-   const themeBtn = document.getElementById('theme-set-btn');
-   window.scrollTo(0,0);
+    // theme controller;
+    const isEnglish = localStorage.getItem('english') === '1';
+    if(isEnglish) {
+        document.body.style.fontFamily = 'Roboto sans-serif';
+        document.body.style.fontSize = '1.15rem';
+    }
+    const isLight = localStorage.getItem('style') === 'light';
+    const themeBtn = document.getElementById('theme-set-btn');
+    window.scrollTo(0,0);
 
-   themeBtn.addEventListener('click',()=>{
-       document.body.classList.toggle('light');
-       handleLight(document.body.classList.contains('light'));
-   });
+    themeBtn.addEventListener('click',()=>{
+        document.body.classList.toggle('light');
+        handleLight(document.body.classList.contains('light'));
+    });
 
-   const handleLight = (light) => {
-       if(light) {
-           document.body.classList.add('light')
-           localStorage.setItem('style','light');
-           themeBtn.innerHTML = '🌙'
-       } else {
-           document.body.classList.contains('light') &&document.body.classList.remove('light')
-           themeBtn.innerHTML = '☀️';
-           localStorage.setItem('style','');
-       }
-   }
+    const handleLight = (light) => {
+        if(light) {
+            document.body.classList.add('light')
+            localStorage.setItem('style','light');
+            themeBtn.innerHTML = '🌙'
+        } else {
+            document.body.classList.contains('light') &&document.body.classList.remove('light')
+            themeBtn.innerHTML = '☀️';
+            localStorage.setItem('style','');
+        }
+    }
 
-   handleLight(isLight);
+    handleLight(isLight);
 
 
-   const styleEl = document.getElementById('style-controller');
-   const styleSetBtn = document.getElementById('style-set-btn');
-   styleSetBtn.addEventListener('click',()=> {
-       styleEl.classList.toggle('hide');
-   })
+    const styleEl = document.getElementById('style-controller');
+    const styleSetBtn = document.getElementById('style-set-btn');
+    styleSetBtn.addEventListener('click',()=> {
+        styleEl.classList.toggle('hide');
+    })
 
-   const container = document.getElementById('chapter-content');
-   const fontEl = document.getElementById('font-select');
-   const sizeEl = document.getElementById('size-select');
-   const lineHeightEl = document.getElementById('line-height-select');
+    const container = document.getElementById('chapter-content');
+    const fontEl = document.getElementById('font-select');
+    const sizeEl = document.getElementById('size-select');
+    const lineHeightEl = document.getElementById('line-height-select');
 
-   fontEl.addEventListener('change', e => {
-       container.style.fontFamily = e.target.value;
-   })
-   sizeEl.addEventListener('change', e => {
-       const paras = container.querySelectorAll('p');
-       paras.forEach(p =>{
-           p.style.fontSize = e.target.value + 'rem';
+    fontEl.addEventListener('change', e => {
+        container.style.fontFamily = e.target.value;
+    })
+    sizeEl.addEventListener('change', e => {
+        const paras = container.querySelectorAll('p');
+        paras.forEach(p =>{
+            p.style.fontSize = e.target.value + 'rem';
 
-       })
-   })
-   lineHeightEl.addEventListener('change', e=> {
-       const ps = container.querySelectorAll('p')
-       ps.forEach(p => {
-           p.style.lineHeight = e.target.value;
-       })
-   });
+        })
+    })
+    lineHeightEl.addEventListener('change', e=> {
+        const ps = container.querySelectorAll('p')
+        ps.forEach(p => {
+            p.style.lineHeight = e.target.value;
+        })
+    });
 
-   // TODO click other area and close the style controller!
+    // TODO click other area and close the style controller!
 
-   document.addEventListener('click', (event) => {
-       let isSelf = styleEl.contains(event.target)  // 这个是自己的区域
-       // if(!isSelf && !styleEl.classList.contains('hide')) {
-       //     styleEl.classList.add('hide')
-       // } else {
-       //     console.log(21)
-       // }
-   })
+    document.addEventListener('click', (event) => {
+        let isSelf = styleEl.contains(event.target)  // 这个是自己的区域
+        // if(!isSelf && !styleEl.classList.contains('hide')) {
+        //     styleEl.classList.add('hide')
+        // } else {
+        //     console.log(21)
+        // }
+    })
 
+</script>
+<script>
+    const handleSelect = () => {
+        if (!document.getSelection().toString().trim()) return;
+        const selected_txt_El = document.getSelection().anchorNode.parentElement;
+        const selected_txt = document.getSelection().toString();
+        const whole_txt = selected_txt_El.innerText;
+        const segments = whole_txt.split(selected_txt);
+        const newArray = [segments[0], selected_txt, segments[1]];
+        splitEl(selected_txt_El, newArray);
+        storeTxts(selected_txt);
+    };
+
+    const splitEl = (el, txts) => {
+        el.innerHTML = "";
+        const start = document.createElement("span");
+        start.innerHTML = txts[0] ?? "";
+        const the_selected = document.createElement("span");
+        the_selected.innerHTML = txts[1] ?? "";
+        the_selected.classList.add("selected");
+        const end = document.createElement("span");
+        end.innerHTML = txts[2] ?? "";
+        el.append(start, the_selected, end);
+    };
+
+    const storeTxts = async (txt) => {
+        const titleValue = localStorage.getItem("title");
+        const formData = new FormData();
+        formData.append("title", titleValue);
+        formData.append("content", txt);
+
+        const res = await fetch(`/notes`, {
+            method: "post",
+            body: formData,
+        });
+        console.log(res);
+    };
+    document.addEventListener("mouseup", handleSelect);
 </script>
 <script>
     const bookName = document.title

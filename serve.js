@@ -29,7 +29,7 @@ app.use(express.static("static"));
 const outAppAsar = __dirname;
 const staticHolder = path.join(__dirname, "static");
 const booksHolder = path.join(outAppAsar, "books");
-const notesHolder = path.join(__dirname, "notes");
+const notesHolder = path.join(outAppAsar, "notes");
 const ejsModelHolder = path.join(staticHolder, "models");
 const ejsGeneratedHolder = path.join(staticHolder, "generated");
 const imgsHolder = path.join(outAppAsar, "imgs");
@@ -245,10 +245,10 @@ app.get("/books", async (req, res) => {
 
 app.get("/notes", async (req, res) => {
   const files = await readFolder(notesHolder);
-  if (files && files.length > 0) {
+  if (files.code === 200 && files.files && files.files.length > 0) {
     res.send({
       code: 200,
-      data: files,
+      data: files.files,
     });
   } else {
     res.send({
@@ -257,6 +257,19 @@ app.get("/notes", async (req, res) => {
     });
   }
 });
+
+app.post('/notes', upload.single('file'),async (req, res)=>{
+  const { title, content } = req.body;
+  const txtPath = path.join(notesHolder,`${title}.txt`);
+  const passed = `\r\n ${content} \r\n --${new Date().toTimeString()} \r\n`;
+  await fs.appendFile(txtPath, passed,'utf-8',(e)=>{
+    if(!e) {
+      res.sendStatus(200)
+    } else {
+      res.sendStatus(500)
+    }
+  });
+})
 
 // 获取书本信息
 
