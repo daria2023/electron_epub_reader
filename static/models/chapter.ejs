@@ -7,9 +7,9 @@
 <body>
 <header>
     <div class="nav">
-        <a href=<%= '/ing/' + title + '/' + prev.index +'/' + prev.src %> >Prev</a>
-        <a href="/">📚</a>
-        <a href=<%= '/ing/' + title + '/' + next.index + '/' + next.src %> >Next</a>
+        <a title="hot key: left arrow" href=<%= '/ing/' + title + '/' + prev.index +'/' + prev.src %>>Prev</a>
+        <a href="/" title="go home">📚</a>
+        <a title="hot key: right arrow" href=<%= '/ing/' + title + '/' + next.index + '/' + next.src %> >Next</a>
     </div>
     <div class="chapter-style">
         <button id="style-set-btn">⚙️</button>
@@ -52,6 +52,20 @@
 <div id="chapter-content" >
     <%- content %>
 </div>
+
+<% if (title) { %>
+    <script>
+        const prevLink = "<%= '/ing/' + title + '/' +  prev.index + '/' + prev.src %>" ;
+        const nextLink = "<%= '/ing/' + title + '/' + next.index + '/' + next.src %>";
+        window.addEventListener('keydown',(e)=>{
+            if(e.code === 'ArrowRight'){
+                window.location.replace(nextLink);
+            } else if(e.code === 'ArrowLeft'){
+                window.location.replace(prevLink);
+            }
+        })
+    </script>
+<% } %>
 
 <script>
    // theme controller;
