@@ -1,5 +1,5 @@
 const file_list = document.getElementById("file-list");
-// const note_list = document.getElementById('notes-list');
+const note_list = document.getElementById('notes-list');
 const fileInput = document.getElementById("uploading");
 
 const fetchData = (cfg, empty, container, cb) => {
@@ -28,7 +28,7 @@ fetchData(
     data.map((li) => {
       const l = document.createElement("li");
       const a = document.createElement("a");
-      a.innerHTML = li;
+      a.innerHTML =  `‣ ${li}`;
       l.append(a);
       file_list.appendChild(l);
       l.addEventListener("click", async () => {
