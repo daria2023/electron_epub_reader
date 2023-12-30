@@ -148,29 +148,31 @@
         const selectedRange = selection.getRangeAt(0)
 
         if(selectedRange.startContainer !== selectedRange.endContainer){
-            console.log(123333)
-            // const selectedSpan = document.createElement('span');
-            // const copiedNodes = selectedRange.extractContents();
-            // selectedSpan.classList.add("selected");
-            // selectedSpan.appendChild(copiedNodes);
-            // window['zs'] = selectedRange;
+            const treeWalker = document.createTreeWalker(selectedRange.commonAncestorContainer, NodeFilter.SHOW_ELEMENT);
+            treeWalker.currentNode = selectedRange.startContainer;
+            while (treeWalker.currentNode) {
+                // Perform actions on the current node (e.g., add a class);
+                if (treeWalker.currentNode === selectedRange.startContainer && treeWalker.currentNode.nodeType === Node.ELEMENT_NODE) {
+                    console.log("首个元素", treeWalker.currentNode);
+                    if(anchorOffset !== 0) {
+                        console.log("需要处理", anchorOffset);
+                        treeWalker.currentNode.splitText(anchorOffset);
+                        // const span =
+                    } else {
+                        console.log("完全接收：", treeWalker.currentNode);
+                        treeWalker.currentNode.classList.add("selected");
+                    }
+                } else {
+                    console.log("其余元素", treeWalker.currentNode)
+                }
 
-            console.log(1111111,selectedRange.getClientRects());
+                treeWalker.nextNode();
 
-            if(anchorOffset === 0){
-                console.log("anchor offset 0");
-                // selectedRange.insertNode(selectedSpan);
-                // console.log(focusNode === "")
-            } else {
-                console.log("上一段中间开始：");
+                if (treeWalker.currentNode === selectedRange.endContainer || treeWalker.currentNode.contains(selectedRange.endContainer)) {
+                    console.log("最后元素：", treeWalker.currentNode)
+                    break;
+                }
             }
-
-
-            // selectedRange.setStart(selectedSpan, selectedRange.startOffset)
-
-            // console.log(1111,selectedSpan, selectedRange.startContainer,selectedRange.startContainer.nodeName)
-            // containerRange.setStart(anchorNode, anchorOffset);
-            // containerRange.deleteContents()
 
         } else {
             const selected_txt_El = document.getSelection().anchorNode.parentElement;

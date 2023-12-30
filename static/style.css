@@ -76,6 +76,10 @@ li a:hover {
     font-size: 1.15rem;
 }
 
+#chapter-content > * {
+    display: inline-block;
+}
+
 input, textarea, select, option,button {
     background-color: transparent;
     padding: 5px 0.5rem;
