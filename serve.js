@@ -261,7 +261,7 @@ app.get("/notes", async (req, res) => {
 app.post('/notes', upload.single('file'),async (req, res)=>{
   const { title, content } = req.body;
   const txtPath = path.join(notesHolder,`${title}.txt`);
-  const passed = `\r\n ${content} \r\n --${new Date().toTimeString()} \r\n`;
+  const passed = `\r\n ${content} \r\n --${new Date().toTimeString().slice(0,8) + " " + new Date().toDateString()} \r\n`;
   await fs.appendFile(txtPath, passed,'utf-8',(e)=>{
     if(!e) {
       res.sendStatus(200)
